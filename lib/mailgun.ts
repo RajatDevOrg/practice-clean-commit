@@ -17,6 +17,12 @@ async function sendSimpleMessage() {
         to: ["Rajat kumar <rajat812678@gmail.com>"],
         subject: "Hello Rajat kumar",
         text: "Congratulations Rajat kumar, you just sent an email with Mailgun! You are truly awesome!",
+        html: `
+          <h1>Hello Rajat!</h1>
+          <p>Congratulations, you sent an <strong>HTML email</strong> with Mailgun!</p>
+          <p style="color: blue;">This is a test of HTML rendering.</p>
+          <a href="https://example.com">Click here</a>
+        `,
       }
     );
 
