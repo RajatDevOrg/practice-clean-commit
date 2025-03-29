@@ -1,0 +1,31 @@
+Consolidation plan for the email generation code:
+
+- Create `emailUtils.ts` Module:
+  - Extract shared components into a reusable utility module.
+
+- Consolidate Organization Header:
+  - Move the common header (logo, name, contact info) to `generateOrgHeader`.
+
+- Centralize Formatting Helpers:
+  - Add `formatWebsiteUrl`, `formatEmail`, and `formatPhoneNumber` to the module.
+
+- Unify Pricing Table:
+  - Refactor `generatePricingTable` into the module with options for variations (e.g., generator fees).
+
+- Standardize Tax Table:
+  - Move `generateTaxTable` and `combineTaxes` to the module for consistent tax display.
+
+- Add Currency Formatting:
+  - Include `formatCurrency` and `formatMoney` in the module.
+
+- Provide Base HTML Template:
+  - Create `generateBaseEmailTemplate` with standard structure and styles, allowing content injection.
+
+- Refactor Individual Files:
+  - Update each email function to import and use utilities, focusing only on unique content.
+
+- Handle Variations:
+  - Use parameters/options to manage differences (e.g., styling, pricing details).
+
+- Test and Validate:
+  - Ensure compatibility across email clients and test for edge cases.

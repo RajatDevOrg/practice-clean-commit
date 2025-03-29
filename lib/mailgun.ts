@@ -1,6 +1,7 @@
 import FormData from "form-data";
 import Mailgun from "mailgun.js";
 import { generateAbandonedCheckoutHtml } from "../EmailCollection/generateAbandonedCheckoutHtml";
+import { generateCancelEmailContent } from "../EmailCollection/generateCancelEmailContent";
 
 async function sendSimpleMessage() {
   const mailgun = new Mailgun(FormData);
@@ -11,7 +12,7 @@ async function sendSimpleMessage() {
   });
 
   // Sample test data
-  const testParams: GenerateAbandonedCheckoutEmailParams = {
+  const testParams1: GenerateAbandonedCheckoutEmailParams = {
     customerName: "Rajat Kumar",
     customerFirstName: "Rajat",
     checkInDate: "2025-04-01T14:00:00Z",
@@ -55,8 +56,25 @@ async function sendSimpleMessage() {
     },
   };
 
+  const testParams2: CancelEmailContentProps = {
+    customerName: "Rajat Kumar",
+    reservationNumber: "RV123456",
+    isSecondReminder: false,
+    customMessage:
+      "We regret to inform you that your reservation has been cancelled due to unforeseen circumstances. Please contact us if you’d like to rebook or discuss refund options.",
+    organization: {
+      logo_url: "https://via.placeholder.com/200x50.png?text=RV+Rentals+Logo",
+      website_url: "https://rvrentals.com/",
+      phone_number: "+1-555-123-4567",
+      email: "support@rvrentals.com",
+      name: "RV Rentals Inc",
+    },
+  };
+
   // Generate the HTML content
-  const htmlContent = generateAbandonedCheckoutHtml(testParams);
+  //const htmlContent = generateAbandonedCheckoutHtml(testParams1);
+
+  const { htmlContent, textContent } = generateCancelEmailContent(testParams2);
 
   try {
     const data = await mg.messages.create(
@@ -64,7 +82,7 @@ async function sendSimpleMessage() {
       {
         from: "RV Rentals Inc <postmaster@sandbox81a3c45ce00b4fbea83ab3d85d6a99cd.mailgun.org>",
         to: ["Rajat Kumar <rajat812678@gmail.com>"],
-        subject: testParams.isSecondReminder
+        subject: testParams2.isSecondReminder
           ? "Last Chance: Complete Your RV Rental"
           : "Your Reservation with RV Rentals Inc",
         html: htmlContent,
