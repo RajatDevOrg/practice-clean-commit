@@ -1,5 +1,5 @@
-import { parseISO } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+import { parseISO } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 interface generateCompletedReservationHtmlParams {
   rvDetails: any;
@@ -9,17 +9,6 @@ interface generateCompletedReservationHtmlParams {
   organizationSettings: any;
   organization: any;
 }
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-};
-
-const formatMoney = (amount: number | null | undefined) => {
-  if (amount == null) return '0.00';
-  return Number(amount).toFixed(2);
-};
 
 const combineTaxes = (taxRateCollection: any[]) => {
   const taxMap = new Map();
@@ -41,8 +30,8 @@ const combineTaxes = (taxRateCollection: any[]) => {
   });
 
   return Array.from(taxMap.values()).sort((a, b) => {
-    if (a.type === 'RENTAL_VEHICLE' && b.type === 'SALES') return -1;
-    if (a.type === 'SALES' && b.type === 'RENTAL_VEHICLE') return 1;
+    if (a.type === "RENTAL_VEHICLE" && b.type === "SALES") return -1;
+    if (a.type === "SALES" && b.type === "RENTAL_VEHICLE") return 1;
     return 0;
   });
 };
@@ -50,21 +39,22 @@ const combineTaxes = (taxRateCollection: any[]) => {
 const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   const rows: string[] = [];
 
-
   // Rental Fee Row
   if (priceSummary?.rentalFee) {
     const baseRate = priceSummary?.selectedUnit?.costPerPeriod || 0;
     rows.push(`
     <tr class="main-row" style="font-size: 0.875rem; background-color: white !important;">
         <td style="padding: 2px 8px;">${
-          priceSummary?.selectedUnit?.name || 'RV'
+          priceSummary?.selectedUnit?.name || "RV"
         } Rental Fee</td>
-        <td style="text-align: right; padding: 2px 8px;">${priceSummary?.chargePeriods}</td>
+        <td style="text-align: right; padding: 2px 8px;">${
+          priceSummary?.chargePeriods
+        }</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          baseRate,
+          baseRate
         )}</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          priceSummary?.rentalFee,
+          priceSummary?.rentalFee
         )}</td>
       </tr>
     `);
@@ -72,7 +62,6 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
 
   // Mileage Fee Row
   if (priceSummary?.mileageFee) {
-
     if (priceSummary.manualMileageFee) {
       rows.push(`
         <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
@@ -80,7 +69,7 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
           <td style="text-align: right; padding: 2px 8px;">-</td>
           <td style="text-align: right; padding: 2px 8px;">-</td>
           <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            priceSummary.mileageFee,
+            priceSummary.mileageFee
           )}</td>
         </tr>
       `);
@@ -91,18 +80,18 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
         <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
           <td style="padding: 2px 8px;">Mileage Fee</td>
           <td style="text-align: right; padding: 2px 8px;">${billableMiles.toFixed(
-            2,
+            2
           )}</td>
           <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            mileageRate,
+            mileageRate
           )}/mile</td>
           <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            priceSummary.mileageFee,
+            priceSummary.mileageFee
           )}</td>
         </tr>
       `);
-    } 
-  } 
+    }
+  }
 
   // Generator Fee Row
   if (priceSummary?.generatorFee && priceSummary.appliedGeneratorRule) {
@@ -114,13 +103,13 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
       <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
         <td style="padding: 2px 8px;">Generator Fee</td>
         <td style="text-align: right; padding: 2px 8px;">${hoursUsed.toFixed(
-          2,
+          2
         )}</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          generatorRate,
+          generatorRate
         )}/hour</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          priceSummary.generatorFee,
+          priceSummary.generatorFee
         )}</td>
       </tr>
     `);
@@ -133,10 +122,10 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
         <td style="padding: 2px 8px;">${addon.name}</td>
         <td style="text-align: right; padding: 2px 8px;">${addon.quantity}</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          addon.baseFee,
+          addon.baseFee
         )}</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          addon.totalFee,
+          addon.totalFee
         )}</td>
       </tr>
     `);
@@ -153,7 +142,7 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
         </tr>
       </thead>
       <tbody>
-        ${rows.join('')}
+        ${rows.join("")}
       </tbody>
     </table>
   `;
@@ -167,27 +156,27 @@ const generateTaxTable = (priceSummary: any) => {
         tax.name
       } (${tax.rate}%):</td>
       <td style="text-align: right; padding: 4px 0; font-size: 0.875rem;  background-color: white !important;">$${formatMoney(
-        tax.amount,
+        tax.amount
       )}</td>
     </tr>
-  `,
+  `
   );
 
-  return taxRows.join('');
+  return taxRows.join("");
 };
 
 // Helper function to format and make URLs clickable
 const formatWebsiteUrl = (url: string | null | undefined): string => {
-  if (!url) return '';
+  if (!url) return "";
 
   // Remove trailing slash
-  let formattedUrl = url.replace(/\/$/, '');
+  let formattedUrl = url.replace(/\/$/, "");
 
   // Create display version (remove https:// or http://)
   let displayUrl = formattedUrl;
-  if (displayUrl.startsWith('https://')) {
+  if (displayUrl.startsWith("https://")) {
     displayUrl = displayUrl.substring(8);
-  } else if (displayUrl.startsWith('http://')) {
+  } else if (displayUrl.startsWith("http://")) {
     displayUrl = displayUrl.substring(7);
   }
 
@@ -197,7 +186,7 @@ const formatWebsiteUrl = (url: string | null | undefined): string => {
 
 // Helper function to format and make email addresses clickable
 const formatEmail = (email: string | null | undefined): string => {
-  if (!email) return '';
+  if (!email) return "";
 
   // Make it clickable with mailto link
   return `<a href="mailto:${email}" style="color: #0070f3; text-decoration: none;">${email}</a>`;
@@ -205,10 +194,10 @@ const formatEmail = (email: string | null | undefined): string => {
 
 // Helper function to format and make phone numbers clickable
 const formatPhoneNumber = (phone: string | null | undefined): string => {
-  if (!phone) return '';
+  if (!phone) return "";
 
   // Remove any non-digit characters for the href
-  const cleanPhone = phone.replace(/\D/g, '');
+  const cleanPhone = phone.replace(/\D/g, "");
 
   // Make it clickable with tel link
   return `<a href="tel:${cleanPhone}" style="color: #0070f3; text-decoration: none;">${phone}</a>`;
@@ -222,14 +211,13 @@ export const generateCompletedReservationHtml = ({
   organizationSettings,
   organization,
 }: generateCompletedReservationHtmlParams): string => {
- 
   const formatUTCDateForDisplay = (
     utcDateString: string | undefined,
-    timezone: string,
+    timezone: string
   ) => {
-    if (!utcDateString) return 'Not set';
+    if (!utcDateString) return "Not set";
     const date = parseISO(utcDateString);
-    return formatInTimeZone(date, timezone, 'MMM dd, yyyy');
+    return formatInTimeZone(date, timezone, "MMM dd, yyyy");
   };
   const emailContent = `
     <!DOCTYPE html>
@@ -263,40 +251,40 @@ export const generateCompletedReservationHtml = ({
               />
             </div>
           `
-              : ''
+              : ""
           }
           <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
             ${organization.name}
           </p>
  <table style="width: 100%; margin: 8px auto;">            <tr>
               <td style="text-align: center; padding: 0 8px; width: 200px;">${formatPhoneNumber(
-                organization.phone_number,
+                organization.phone_number
               )}</td>
               <td style="text-align: center; padding: 0 8px; width: 200px;">${formatEmail(
-                organization.email,
+                organization.email
               )}</td>
               <td style="text-align: center; padding: 0 8px; width: 200px;">${formatWebsiteUrl(
-                organization.website_url,
+                organization.website_url
               )}</td>
             </tr>
           </table>
         </div>
         
         <h1 style="font-size: 24px; color: #333; margin: 0 0 20px 0; text-align: center;">
-        Congratulations, you have reserved the ${rvDetails?.name || 'RV'} <br>
+        Congratulations, you have reserved the ${rvDetails?.name || "RV"} <br>
           from ${formatUTCDateForDisplay(
             dates.checkIn,
-            organizationSettings.timezone,
+            organizationSettings.timezone
           )} to ${formatUTCDateForDisplay(
-            dates.checkOut,
-            organizationSettings.timezone,
-          )}
+    dates.checkOut,
+    organizationSettings.timezone
+  )}
         </h1>
 
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="${rvDetails?.primary_image_url || ''}" alt="${
-            rvDetails?.name || 'RV'
-          }" style="max-width: 100%; height: auto; margin-bottom: 20px;  border-radius: 8px;">
+          <img src="${rvDetails?.primary_image_url || ""}" alt="${
+    rvDetails?.name || "RV"
+  }" style="max-width: 100%; height: auto; margin-bottom: 20px;  border-radius: 8px;">
         </div>
 
 
@@ -307,14 +295,14 @@ export const generateCompletedReservationHtml = ({
               <strong>Departure</strong><br>
               ${formatUTCDateForDisplay(
                 dates.checkIn,
-                organizationSettings.timezone,
+                organizationSettings.timezone
               )}
             </td>
             <td style="text-align: right;">
               <strong>Return</strong><br>
               ${formatUTCDateForDisplay(
                 dates.checkOut,
-                organizationSettings.timezone,
+                organizationSettings.timezone
               )}
             </td>
           </tr>
@@ -331,14 +319,14 @@ export const generateCompletedReservationHtml = ({
             <tr>
               <td style="text-align: left; font-weight: bold; padding: 4px 0;">Subtotal:</td>
               <td style="text-align: right; padding: 4px 0; font-weight: bold;">$${formatMoney(
-                priceSummary.totalBeforeTax,
+                priceSummary.totalBeforeTax
               )}</td>
             </tr>
             ${generateTaxTable(priceSummary)}
             <tr>
               <td style="text-align: left; font-weight: bold; padding: 4px 0;  background-color: white !important">Total:</td>
               <td style="text-align: right; font-weight: bold; padding: 4px 0;  background-color: white !important">$${formatMoney(
-                priceSummary.grandTotal,
+                priceSummary.grandTotal
               )}</td>
             </tr>
           </table>
@@ -346,7 +334,7 @@ export const generateCompletedReservationHtml = ({
 
         <div class="section-header">Additional Information</div>
         <div style="margin-bottom: 20px;">
-          ${emailText.replace(/\n/g, '<br>')}
+          ${emailText.replace(/\n/g, "<br>")}
         </div>
       </div>
   <div style="margin-top: 20px; text-align: center;">

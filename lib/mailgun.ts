@@ -72,9 +72,9 @@ async function sendSimpleMessage() {
   };
 
   // Generate the HTML content
-  //const htmlContent = generateAbandonedCheckoutHtml(testParams1);
+  const htmlContent = generateAbandonedCheckoutHtml(testParams1);
 
-  const { htmlContent, textContent } = generateCancelEmailContent(testParams2);
+  //const { htmlContent, textContent } = generateCancelEmailContent(testParams2);
 
   try {
     const data = await mg.messages.create(

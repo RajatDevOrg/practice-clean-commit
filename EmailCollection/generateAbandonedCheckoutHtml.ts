@@ -1,42 +1,5 @@
-import { formatInTimeZone } from 'date-fns-tz';
-
-// Helper function to format and make URLs clickable
-const formatWebsiteUrl = (url: string | null | undefined): string => {
-  if (!url) return '';
-
-  // Remove trailing slash
-  let formattedUrl = url.toString().replace(/\/$/, '');
-
-  // Create display version (remove https:// or http://)
-  let displayUrl = formattedUrl;
-  if (displayUrl.startsWith('https://')) {
-    displayUrl = displayUrl.substring(8);
-  } else if (displayUrl.startsWith('http://')) {
-    displayUrl = displayUrl.substring(7);
-  }
-
-  // Make it clickable
-  return `<a href="${formattedUrl}" target="_blank" style="color: #0070f3; text-decoration: none;">${displayUrl}</a>`;
-};
-
-// Helper function to format and make email addresses clickable
-const formatEmail = (email: string | null | undefined): string => {
-  if (!email) return '';
-
-  // Make it clickable with mailto link
-  return `<a href="mailto:${email}" style="color: #0070f3; text-decoration: none;">${email}</a>`;
-};
-
-// Helper function to format and make phone numbers clickable
-const formatPhoneNumber = (phone: string | null | undefined): string => {
-  if (!phone) return '';
-
-  // Remove any non-digit characters for the href
-  const cleanPhone = phone.toString().replace(/\D/g, '');
-
-  // Make it clickable with tel link
-  return `<a href="tel:${cleanPhone}" style="color: #0070f3; text-decoration: none;">${phone}</a>`;
-};
+import { formatInTimeZone } from "date-fns-tz";
+import { generateOrgHeader, formatCurrency, formatMoney } from "./emailUtils";
 
 interface GenerateAbandonedCheckoutEmailParams {
   customerName: string;
@@ -59,18 +22,6 @@ interface GenerateAbandonedCheckoutEmailParams {
   priceSummary?: any;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-};
-
-const formatMoney = (amount: number | null | undefined) => {
-  if (amount == null) return '0.00';
-  return Number(amount).toFixed(2);
-};
-
 const combineTaxes = (taxRateCollection: any[]) => {
   const taxMap = new Map();
 
@@ -91,14 +42,14 @@ const combineTaxes = (taxRateCollection: any[]) => {
   });
 
   return Array.from(taxMap.values()).sort((a, b) => {
-    if (a.type === 'RENTAL_VEHICLE' && b.type === 'SALES') return -1;
-    if (a.type === 'SALES' && b.type === 'RENTAL_VEHICLE') return 1;
+    if (a.type === "RENTAL_VEHICLE" && b.type === "SALES") return -1;
+    if (a.type === "SALES" && b.type === "RENTAL_VEHICLE") return 1;
     return 0;
   });
 };
 
 const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
-  if (!priceSummary) return '';
+  if (!priceSummary) return "";
 
   const rows: string[] = [];
 
@@ -106,18 +57,20 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   if (priceSummary?.rentalFee) {
     const baseRate = priceSummary?.selectedUnit?.costPerPeriod || 0;
     rows.push(`
-    <tr class="main-row" style="font-size: 0.875rem; background-color: white !important;">
-        <td style="padding: 2px 8px;">${
-          priceSummary?.selectedUnit?.name || 'RV'
-        } Rental Fee</td>
-        <td style="text-align: right; padding: 2px 8px;">${priceSummary?.chargePeriods}</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          baseRate,
-        )}</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          priceSummary?.rentalFee,
-        )}</td>
-      </tr>
+    <tr class="main-row" style="background-color: white;">
+    <td style="padding: 2px 8px; word-wrap: break-word;">${
+      priceSummary?.selectedUnit?.name || "RV"
+    } Rental Fee</td>
+    <td style="text-align: right; padding: 2px 8px;">${
+      priceSummary?.chargePeriods
+    }</td>
+    <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+      baseRate
+    )}</td>
+    <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+      priceSummary?.rentalFee
+    )}</td>
+  </tr>
     `);
   }
 
@@ -130,7 +83,7 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
           <td style="text-align: right; padding: 2px 8px;">-</td>
           <td style="text-align: right; padding: 2px 8px;">-</td>
           <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            priceSummary.mileageFee,
+            priceSummary.mileageFee
           )}</td>
         </tr>
       `);
@@ -141,13 +94,13 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
         <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
           <td style="padding: 2px 8px;">Mileage Fee</td>
           <td style="text-align: right; padding: 2px 8px;">${billableMiles.toFixed(
-            2,
+            2
           )}</td>
           <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            mileageRate,
+            mileageRate
           )}/mile</td>
           <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            priceSummary.mileageFee,
+            priceSummary.mileageFee
           )}</td>
         </tr>
       `);
@@ -164,13 +117,13 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
       <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
         <td style="padding: 2px 8px;">Generator Fee</td>
         <td style="text-align: right; padding: 2px 8px;">${hoursUsed.toFixed(
-          2,
+          2
         )}</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          generatorRate,
+          generatorRate
         )}/hour</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          priceSummary.generatorFee,
+          priceSummary.generatorFee
         )}</td>
       </tr>
     `);
@@ -183,49 +136,49 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
         <td style="padding: 2px 8px;">${addon.name}</td>
         <td style="text-align: right; padding: 2px 8px;">${addon.quantity}</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          addon.baseFee,
+          addon.baseFee
         )}</td>
         <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          addon.totalFee,
+          addon.totalFee
         )}</td>
       </tr>
     `);
   });
 
   return `
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+   <table style="width: 100%; max-width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem;">
       <thead>
-        <tr style="background-color: #f3f4f6; font-size: 0.875rem;">
-          <th style="text-align: left; padding: 8px;">Description</th>
-          <th style="text-align: right; padding: 8px;">Quantity</th>
-          <th style="text-align: right; padding: 8px;">Amount</th>
-          <th style="text-align: right; padding: 8px;">Total</th>
+        <tr style="background-color: #f3f4f6;">
+          <th style="text-align: left; padding: 2px 8px; white-space: nowrap;">Description</th>
+          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Qty</th>
+          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Amount</th>
+          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Total</th>
         </tr>
       </thead>
       <tbody>
-        ${rows.join('')}
+        ${rows.join("")}
       </tbody>
     </table>
   `;
 };
 
 const generateTaxTable = (priceSummary: any) => {
-  if (!priceSummary || !priceSummary.taxRateCollection) return '';
+  if (!priceSummary || !priceSummary.taxRateCollection) return "";
 
   const taxRows = combineTaxes(priceSummary.taxRateCollection).map(
     (tax) => `
     <tr>
-      <td style="text-align: left; padding: 4px 0 4px 40px; font-size: 0.875rem; background-color: white !important;">${
+      <td style="text-align: left; padding: 4px 0 4px 0px; font-size: 0.875rem; background-color: white !important;">${
         tax.name
       } (${tax.rate}%):</td>
       <td style="text-align: right; padding: 4px 0; font-size: 0.875rem;  background-color: white !important;">$${formatMoney(
-        tax.amount,
+        tax.amount
       )}</td>
     </tr>
-  `,
+  `
   );
 
-  return taxRows.join('');
+  return taxRows.join("");
 };
 
 export const generateAbandonedCheckoutHtml = ({
@@ -244,34 +197,34 @@ export const generateAbandonedCheckoutHtml = ({
   const formatUTCDateForDisplay = (
     utcDateString: string | null,
     timezone: string,
-    formatString: string,
+    formatString: string
   ) => {
-    if (!utcDateString) return 'Not selected';
+    if (!utcDateString) return "Not selected";
     return formatInTimeZone(utcDateString, timezone, formatString);
   };
 
-  const timezone = organizationSettings?.timezone || 'America/New_York';
+  const timezone = organizationSettings?.timezone || "America/New_York";
 
   // Different content based on whether this is the first or second reminder
   const emailTitle = isSecondReminder
-    ? 'Last Chance: Complete Your RV Rental'
+    ? "Last Chance: Complete Your RV Rental"
     : `Your Reservation with ${organization.name}`;
 
   const emailIntro = isSecondReminder
     ? `We noticed you still haven't completed your RV booking. Your selected dates are in demand, and we can't guarantee availability much longer.`
     : `Hi ${customerFirstName}, you're almost there! Click the Reserve Now button to complete your reservation, or feel free to call us at the phone number above if you have any questions.`;
 
-  const ctaButtonColor = isSecondReminder ? '#0070f3' : '#0070f3';
+  const ctaButtonColor = isSecondReminder ? "#0070f3" : "#0070f3";
   const ctaButtonText = isSecondReminder
-    ? 'Complete Your Booking Now'
-    : 'Reserve Now';
+    ? "Complete Your Booking Now"
+    : "Reserve Now";
 
   // Optional urgency box for second reminder
   const urgencyBox = isSecondReminder
     ? `<div style="border: 2px solid #0070f3; padding: 15px; margin: 20px 0; text-align: center; border-radius: 4px;">
         <p style="margin: 0; font-weight: bold;">Don't miss out! Complete your booking now to secure your perfect RV vacation.</p>
       </div>`
-    : '';
+    : "";
 
   const emailContent = `
     <!DOCTYPE html>
@@ -281,8 +234,7 @@ export const generateAbandonedCheckoutHtml = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${emailTitle}</title>
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #000000; }
-        .email-container { width: 600px; margin: 0 auto; padding: 10px; }
+  
         .section-header { font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
@@ -293,58 +245,38 @@ export const generateAbandonedCheckoutHtml = ({
         .cta-button { background-color: ${ctaButtonColor}; color: white; padding: 14px 24px; text-decoration: none; display: inline-block; margin: 20px 0; border-radius: 4px; font-weight: bold; }
       </style>
     </head>
-    <body>
-      <div class="email-container">
-        <div style="margin-bottom: 24px; text-align: center;">
-          ${
-            organization.logo_url
-              ? `
-            <div style="width: 100%; margin-bottom: 16px; text-align: center;">
-              <img
-                src="${organization.logo_url}"
-                alt="${organization.name}"
-                style="max-width: 100%; max-height: 100px; object-fit: contain; margin: 0 auto;"
-              />
-            </div>
-          `
-              : ''
-          }
-          <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
-            ${organization.name}
-          </p>
-      <table style="width: 100%; margin: 8px auto;">            <tr>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatPhoneNumber(
-                organization.phone_number,
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatEmail(
-                organization.email,
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatWebsiteUrl(
-                organization.website_url,
-              )}</td>
-            </tr>
-          </table>
-        </div>
+    <body style="margin: 0; padding: 0; overflow-x: hidden;   width: 100% ; background-color: #f9f9f9; text-align: center;  font-family: Arial, sans-serif;
+         line-height: 1.6;
+         color: #000000;" >
+         <div style=" max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+             padding: 8px;
+             box-sizing: border-box;
+            background-color: white;
+            text-align: left; 
+            display: inline-block;" >
+            ${generateOrgHeader(organization)}
         
         <h1 style="font-size: 20px; color: #333; margin: 0 0 20px 0; text-align: center;">
           ${emailIntro}
         </h1>
 
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="${rvDetails?.primary_image_url || ''}" alt="${
-            rvName || 'RV'
-          }" style="max-width: 100%; height: auto; margin-bottom: 20px; border-radius: 8px;">
+          <img src="${rvDetails?.primary_image_url || ""}" alt="${
+    rvName || "RV"
+  }" style="max-width: 100%; height: auto; margin-bottom: 20px; border-radius: 8px;">
         </div>
 
         <div class="section-header">Rental Dates</div>
-        <table style="margin-bottom: 20px;">
+        <table style="width: 100%; max-width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem;">
           <tr>
             <td>
               <strong>Departure</strong><br>
               ${formatUTCDateForDisplay(
                 checkInDate,
                 timezone,
-                'MMM d, yyyy h:mm a',
+                "MMM d, yyyy h:mm a"
               )}
             </td>
             <td style="text-align: right;">
@@ -352,7 +284,7 @@ export const generateAbandonedCheckoutHtml = ({
                 ${formatUTCDateForDisplay(
                   checkOutDate,
                   timezone,
-                  'MMM d, yyyy h:mm a',
+                  "MMM d, yyyy h:mm a"
                 )}
             </td>
           </tr>
@@ -362,7 +294,7 @@ export const generateAbandonedCheckoutHtml = ({
           priceSummary
             ? `
         <div class="section-header">Price Summary</div>
-        <div class="overflow-auto max-h-[500px] w-full">
+        <div style="overflow-y: auto; overflow-x: hidden; max-height: 500px; width: 100%;">
           ${generatePricingTable(priceSummary, organizationSettings)}
         </div>
         <div style="border-top: 1px solid #e5e7eb; margin-top: 1rem; padding-top: 1rem;">
@@ -370,31 +302,31 @@ export const generateAbandonedCheckoutHtml = ({
             <tr>
               <td style="text-align: left; font-weight: bold; padding: 4px 0;">Subtotal:</td>
               <td style="text-align: right; padding: 4px 0; font-weight: bold;">$${formatMoney(
-                priceSummary.totalBeforeTax,
+                priceSummary.totalBeforeTax
               )}</td>
             </tr>
             ${generateTaxTable(priceSummary)}
             <tr>
               <td style="text-align: left; font-weight: bold; padding: 4px 0;  background-color: white !important">Total:</td>
               <td style="text-align: right; font-weight: bold; padding: 4px 0;  background-color: white !important">$${formatMoney(
-                priceSummary.grandTotal,
+                priceSummary.grandTotal
               )}</td>
             </tr>
           </table>
         </div>
         `
-            : ''
+            : ""
         }
 
         ${urgencyBox}
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${resumeUrl}" class="cta-button">
+          <a href="${resumeUrl}" style="color: white;" class="cta-button">
             ${ctaButtonText}${
-              priceSummary
-                ? ` for ${formatCurrency(priceSummary.reservationDeposit || 0)}`
-                : ''
-            }
+    priceSummary
+      ? ` for ${formatCurrency(priceSummary.reservationDeposit || 0)}`
+      : ""
+  }
           </a>
         </div>
         

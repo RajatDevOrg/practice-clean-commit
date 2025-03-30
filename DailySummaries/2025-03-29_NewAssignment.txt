@@ -18,14 +18,10 @@ Consolidation plan for the email generation code:
 - Add Currency Formatting:
   - Include `formatCurrency` and `formatMoney` in the module.
 
-- Provide Base HTML Template:
-  - Create `generateBaseEmailTemplate` with standard structure and styles, allowing content injection.
 
 - Refactor Individual Files:
   - Update each email function to import and use utilities, focusing only on unique content.
 
-- Handle Variations:
-  - Use parameters/options to manage differences (e.g., styling, pricing details).
 
 - Test and Validate:
   - Ensure compatibility across email clients and test for edge cases.
