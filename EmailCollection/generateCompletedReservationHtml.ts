@@ -1,5 +1,11 @@
 import { parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import {
+  formatEmail,
+  formatMoney,
+  formatPhoneNumber,
+  formatWebsiteUrl,
+} from "./emailUtils";
 
 interface generateCompletedReservationHtmlParams {
   rvDetails: any;
@@ -163,44 +169,6 @@ const generateTaxTable = (priceSummary: any) => {
   );
 
   return taxRows.join("");
-};
-
-// Helper function to format and make URLs clickable
-const formatWebsiteUrl = (url: string | null | undefined): string => {
-  if (!url) return "";
-
-  // Remove trailing slash
-  let formattedUrl = url.replace(/\/$/, "");
-
-  // Create display version (remove https:// or http://)
-  let displayUrl = formattedUrl;
-  if (displayUrl.startsWith("https://")) {
-    displayUrl = displayUrl.substring(8);
-  } else if (displayUrl.startsWith("http://")) {
-    displayUrl = displayUrl.substring(7);
-  }
-
-  // Make it clickable
-  return `<a href="${formattedUrl}" target="_blank" style="color: #0070f3; text-decoration: none;">${displayUrl}</a>`;
-};
-
-// Helper function to format and make email addresses clickable
-const formatEmail = (email: string | null | undefined): string => {
-  if (!email) return "";
-
-  // Make it clickable with mailto link
-  return `<a href="mailto:${email}" style="color: #0070f3; text-decoration: none;">${email}</a>`;
-};
-
-// Helper function to format and make phone numbers clickable
-const formatPhoneNumber = (phone: string | null | undefined): string => {
-  if (!phone) return "";
-
-  // Remove any non-digit characters for the href
-  const cleanPhone = phone.replace(/\D/g, "");
-
-  // Make it clickable with tel link
-  return `<a href="tel:${cleanPhone}" style="color: #0070f3; text-decoration: none;">${phone}</a>`;
 };
 
 export const generateCompletedReservationHtml = ({
