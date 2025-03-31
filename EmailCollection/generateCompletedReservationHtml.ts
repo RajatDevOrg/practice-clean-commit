@@ -1,5 +1,12 @@
 import { parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import {
+  formatEmail,
+  formatMoney,
+  formatPhoneNumber,
+  formatWebsiteUrl,
+  generateOrgHeader,
+} from "./emailUtils";
 
 interface generateCompletedReservationHtmlParams {
   rvDetails: any;
@@ -43,21 +50,21 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   if (priceSummary?.rentalFee) {
     const baseRate = priceSummary?.selectedUnit?.costPerPeriod || 0;
     rows.push(`
-    <tr class="main-row" style="font-size: 0.875rem; background-color: white !important;">
-        <td style="padding: 2px 8px;">${
-          priceSummary?.selectedUnit?.name || "RV"
-        } Rental Fee</td>
-        <td style="text-align: right; padding: 2px 8px;">${
-          priceSummary?.chargePeriods
-        }</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          baseRate
-        )}</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          priceSummary?.rentalFee
-        )}</td>
-      </tr>
-    `);
+   <tr class="main-row" style="font-size: 0.875rem; background-color: white !important;">
+    <td style="padding: 2px 8px; word-break: break-word; width: 40%;">${
+      priceSummary?.selectedUnit?.name || "RV"
+    } Rental Fee</td>
+    <td style="text-align: right; padding: 2px 8px; width: 15%;">${
+      priceSummary?.chargePeriods
+    }</td>
+    <td style="text-align: right; padding: 2px 8px; width: 20%;">$${formatMoney(
+      baseRate
+    )}</td>
+    <td style="text-align: right; padding: 2px 8px; width: 25%;">$${formatMoney(
+      priceSummary?.rentalFee
+    )}</td>
+  </tr>
+`);
   }
 
   // Mileage Fee Row
@@ -132,75 +139,39 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   });
 
   return `
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+  <div style="overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch;">
+    <table style="width: 100%; min-width: 500px; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem;">
       <thead>
-        <tr style="background-color: #f3f4f6; font-size: 0.875rem;">
-          <th style="text-align: left; padding: 8px;">Description</th>
-          <th style="text-align: right; padding: 8px;">Quantity</th>
-          <th style="text-align: right; padding: 8px;">Amount</th>
-          <th style="text-align: right; padding: 8px;">Total</th>
+        <tr style="background-color: #f3f4f6;">
+          <th style="text-align: left; padding: 2px 8px; white-space: nowrap;">Description</th>
+          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Qty</th>
+          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Amount</th>
+          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Total</th>
         </tr>
       </thead>
       <tbody>
         ${rows.join("")}
       </tbody>
     </table>
+  </div>
   `;
 };
 
 const generateTaxTable = (priceSummary: any) => {
   const taxRows = combineTaxes(priceSummary.taxRateCollection).map(
     (tax) => `
-    <tr>
-      <td style="text-align: left; padding: 4px 0 4px 40px; font-size: 0.875rem; background-color: white !important;">${
-        tax.name
-      } (${tax.rate}%):</td>
-      <td style="text-align: right; padding: 4px 0; font-size: 0.875rem;  background-color: white !important;">$${formatMoney(
-        tax.amount
-      )}</td>
-    </tr>
-  `
+  <tr>
+    <td style="text-align: left; padding: 4px 0 4px 4px; font-size: 0.875rem; background-color: white !important; width: 75%;">${
+      tax.name
+    } (${tax.rate}%):</td>
+    <td style="text-align: right; padding: 4px 0; font-size: 0.875rem; background-color: white !important; width: 25%;">$${formatMoney(
+      tax.amount
+    )}</td>
+  </tr>
+`
   );
 
   return taxRows.join("");
-};
-
-// Helper function to format and make URLs clickable
-const formatWebsiteUrl = (url: string | null | undefined): string => {
-  if (!url) return "";
-
-  // Remove trailing slash
-  let formattedUrl = url.replace(/\/$/, "");
-
-  // Create display version (remove https:// or http://)
-  let displayUrl = formattedUrl;
-  if (displayUrl.startsWith("https://")) {
-    displayUrl = displayUrl.substring(8);
-  } else if (displayUrl.startsWith("http://")) {
-    displayUrl = displayUrl.substring(7);
-  }
-
-  // Make it clickable
-  return `<a href="${formattedUrl}" target="_blank" style="color: #0070f3; text-decoration: none;">${displayUrl}</a>`;
-};
-
-// Helper function to format and make email addresses clickable
-const formatEmail = (email: string | null | undefined): string => {
-  if (!email) return "";
-
-  // Make it clickable with mailto link
-  return `<a href="mailto:${email}" style="color: #0070f3; text-decoration: none;">${email}</a>`;
-};
-
-// Helper function to format and make phone numbers clickable
-const formatPhoneNumber = (phone: string | null | undefined): string => {
-  if (!phone) return "";
-
-  // Remove any non-digit characters for the href
-  const cleanPhone = phone.replace(/\D/g, "");
-
-  // Make it clickable with tel link
-  return `<a href="tel:${cleanPhone}" style="color: #0070f3; text-decoration: none;">${phone}</a>`;
 };
 
 export const generateCompletedReservationHtml = ({
@@ -237,38 +208,18 @@ export const generateCompletedReservationHtml = ({
         .tax-row { background-color: #ffffff !important; font-weight: normal; font-size: 0.875rem; }
       </style>
     </head>
-    <body>
-      <div class="email-container">
-        <div style="margin-bottom: 24px; text-align: center;">
-          ${
-            organization.logo_url
-              ? `
-            <div style="width: 100%; margin-bottom: 16px; text-align: center;">
-              <img
-                src="${organization.logo_url}"
-                alt="${organization.name}"
-                style="max-width: 100%; max-height: 100px; object-fit: contain; margin: 0 auto;"
-              />
-            </div>
-          `
-              : ""
-          }
-          <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
-            ${organization.name}
-          </p>
- <table style="width: 100%; margin: 8px auto;">            <tr>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatPhoneNumber(
-                organization.phone_number
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatEmail(
-                organization.email
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatWebsiteUrl(
-                organization.website_url
-              )}</td>
-            </tr>
-          </table>
-        </div>
+    <body style="margin: 0; padding: 0; overflow-x: hidden;   width: 100% ; background-color: #f9f9f9;   box-sizing: border-box; text-align: center;  font-family: Arial, sans-serif;
+         line-height: 1.6;
+         color: #000000;" >
+      <div style=" max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+             padding: 8px;
+             box-sizing: border-box;
+            background-color: white;
+            text-align: left; 
+           ">
+          ${generateOrgHeader(organization)}
         
         <h1 style="font-size: 24px; color: #333; margin: 0 0 20px 0; text-align: center;">
         Congratulations, you have reserved the ${rvDetails?.name || "RV"} <br>
@@ -309,7 +260,7 @@ export const generateCompletedReservationHtml = ({
         </table>
 
         <div class="section-header">Price Summary</div>
-        <div class="overflow-auto max-h-[500px] w-full">
+       <div style="overflow-y: auto; overflow-x: hidden; max-height: 500px; width: 100%;">
     
               ${generatePricingTable(priceSummary, organizationSettings)}
           

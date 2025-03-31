@@ -1,3 +1,4 @@
+import SendEmailButton from "../../../Components/SendEmailButton";
 import { generateCancelEmailContent } from "../../../EmailCollection/generateCancelEmailContent";
 
 const testInput = {
@@ -19,6 +20,8 @@ export default function CancelPage() {
   return (
     <div>
       <h1>Cancellation Page</h1>
+
+      <SendEmailButton />
       <div dangerouslySetInnerHTML={{ __html: emailContent.htmlContent }} />
     </div>
   );

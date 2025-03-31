@@ -255,7 +255,7 @@ export const generateAbandonedCheckoutHtml = ({
              box-sizing: border-box;
             background-color: white;
             text-align: left; 
-            display: inline-block;" >
+           " >
             ${generateOrgHeader(organization)}
         
         <h1 style="font-size: 20px; color: #333; margin: 0 0 20px 0; text-align: center;">
