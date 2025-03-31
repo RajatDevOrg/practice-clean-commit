@@ -1,12 +1,6 @@
 import { parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import {
-  formatEmail,
-  formatMoney,
-  formatPhoneNumber,
-  formatWebsiteUrl,
-  generateOrgHeader,
-} from "./emailUtils";
+import { formatMoney, generateOrgHeader } from "./emailUtils";
 
 interface generateCompletedReservationHtmlParams {
   rvDetails: any;
@@ -50,52 +44,80 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   if (priceSummary?.rentalFee) {
     const baseRate = priceSummary?.selectedUnit?.costPerPeriod || 0;
     rows.push(`
-   <tr class="main-row" style="font-size: 0.875rem; background-color: white !important;">
-    <td style="padding: 2px 8px; word-break: break-word; width: 40%;">${
-      priceSummary?.selectedUnit?.name || "RV"
-    } Rental Fee</td>
-    <td style="text-align: right; padding: 2px 8px; width: 15%;">${
-      priceSummary?.chargePeriods
-    }</td>
-    <td style="text-align: right; padding: 2px 8px; width: 20%;">$${formatMoney(
-      baseRate
-    )}</td>
-    <td style="text-align: right; padding: 2px 8px; width: 25%;">$${formatMoney(
-      priceSummary?.rentalFee
-    )}</td>
-  </tr>
-`);
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
+          <td style="padding: 4px 8px;">${
+            priceSummary?.selectedUnit?.name || "RV"
+          } Rental Fee</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
+          <td style="padding: 4px 8px;">${priceSummary?.chargePeriods}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
+          <td style="padding: 4px 8px;">$${formatMoney(baseRate)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
+          <td style="padding: 4px 8px;">$${formatMoney(
+            priceSummary?.rentalFee
+          )}</td>
+        </tr>
+      </table>
+    `);
   }
 
   // Mileage Fee Row
   if (priceSummary?.mileageFee) {
     if (priceSummary.manualMileageFee) {
       rows.push(`
-        <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
-          <td style="padding: 2px 8px;">Mileage Fee</td>
-          <td style="text-align: right; padding: 2px 8px;">-</td>
-          <td style="text-align: right; padding: 2px 8px;">-</td>
-          <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            priceSummary.mileageFee
-          )}</td>
-        </tr>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
+            <td style="padding: 4px 8px;">Mileage Fee</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
+            <td style="padding: 4px 8px;">-</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
+            <td style="padding: 4px 8px;">-</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
+            <td style="padding: 4px 8px;">$${formatMoney(
+              priceSummary.mileageFee
+            )}</td>
+          </tr>
+        </table>
       `);
     } else if (priceSummary.appliedMileageRule) {
       const billableMiles = priceSummary.billable_miles || 0;
       const mileageRate = priceSummary.appliedMileageRule.tiers[0]?.rate || 0;
       rows.push(`
-        <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
-          <td style="padding: 2px 8px;">Mileage Fee</td>
-          <td style="text-align: right; padding: 2px 8px;">${billableMiles.toFixed(
-            2
-          )}</td>
-          <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            mileageRate
-          )}/mile</td>
-          <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-            priceSummary.mileageFee
-          )}</td>
-        </tr>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
+            <td style="padding: 4px 8px;">Mileage Fee</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
+            <td style="padding: 4px 8px;">${billableMiles.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
+            <td style="padding: 4px 8px;">$${formatMoney(mileageRate)}/mile</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
+            <td style="padding: 4px 8px;">$${formatMoney(
+              priceSummary.mileageFee
+            )}</td>
+          </tr>
+        </table>
       `);
     }
   }
@@ -107,56 +129,59 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
       (priceSummary.departureGeneratorHours || 0);
     const generatorRate = priceSummary.generatorFee / hoursUsed;
     rows.push(`
-      <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
-        <td style="padding: 2px 8px;">Generator Fee</td>
-        <td style="text-align: right; padding: 2px 8px;">${hoursUsed.toFixed(
-          2
-        )}</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          generatorRate
-        )}/hour</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          priceSummary.generatorFee
-        )}</td>
-      </tr>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
+          <td style="padding: 4px 8px;">Generator Fee</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
+          <td style="padding: 4px 8px;">${hoursUsed.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
+          <td style="padding: 4px 8px;">$${formatMoney(generatorRate)}/hour</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
+          <td style="padding: 4px 8px;">$${formatMoney(
+            priceSummary.generatorFee
+          )}</td>
+        </tr>
+      </table>
     `);
   }
 
   // Addon Rows
   (priceSummary?.selectedAddons || []).forEach((addon: any) => {
     rows.push(`
-      <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
-        <td style="padding: 2px 8px;">${addon.name}</td>
-        <td style="text-align: right; padding: 2px 8px;">${addon.quantity}</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          addon.baseFee
-        )}</td>
-        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-          addon.totalFee
-        )}</td>
-      </tr>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
+          <td style="padding: 4px 8px;">${addon.name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
+          <td style="padding: 4px 8px;">${addon.quantity}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
+          <td style="padding: 4px 8px;">$${formatMoney(addon.baseFee)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
+          <td style="padding: 4px 8px;">$${formatMoney(addon.totalFee)}</td>
+        </tr>
+      </table>
     `);
   });
 
   return `
-  <div style="overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch;">
-    <table style="width: 100%; min-width: 500px; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem;">
-      <thead>
-        <tr style="background-color: #f3f4f6;">
-          <th style="text-align: left; padding: 2px 8px; white-space: nowrap;">Description</th>
-          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Qty</th>
-          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Amount</th>
-          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.join("")}
-      </tbody>
-    </table>
-  </div>
+    <div style="width: 100%;">
+      ${rows.join("")}
+    </div>
   `;
 };
-
 const generateTaxTable = (priceSummary: any) => {
   const taxRows = combineTaxes(priceSummary.taxRateCollection).map(
     (tax) => `
@@ -260,7 +285,7 @@ export const generateCompletedReservationHtml = ({
         </table>
 
         <div class="section-header">Price Summary</div>
-       <div style="overflow-y: auto; overflow-x: hidden; max-height: 500px; width: 100%;">
+      <div style="width: 100%; margin-bottom: 20px;">
     
               ${generatePricingTable(priceSummary, organizationSettings)}
           

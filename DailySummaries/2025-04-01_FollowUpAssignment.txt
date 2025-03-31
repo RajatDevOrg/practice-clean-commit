@@ -1,0 +1,5 @@
+Continuing Email Code Consolidation:
+	•	Completed refactoring remaining email templates to use emailUtils.ts.
+	•	Moved shared logic into reusable functions for consistency and maintainability.
+	•	Ensured all email headers, tables, and formatting follow a standardized structure.
+	•	Ran tests to verify formatting and compatibility across email clients.
