@@ -287,7 +287,7 @@ export const generateQuoteHtml = ({
           </table>
         </div>
 
-        <div class="section-header">Additional Information</div>
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Additional Information</div>
         <div style="margin-bottom: 20px;">
           ${emailText.replace(/\n/g, "<br>")}
         </div>
