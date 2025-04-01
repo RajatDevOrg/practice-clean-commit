@@ -5,53 +5,41 @@ export const generateOrgHeader = (organization: {
   email?: string;
   website_url?: string;
 }) => `
-  <div style="margin-bottom: 24px; overflow-x: hidden; text-align: center;">
-    ${
-      organization.logo_url
-        ? `
-      <div style="width: 100%; margin-bottom: 16px; text-align: center;">
-        <img src="${organization.logo_url}" alt="${organization.name}" width="500" height="100" style="max-width: 300px; height: auto; object-fit: contain; margin: 0 auto;" />
-      </div>`
-        : ""
-    }
-      
-    <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${
-      organization.name
-    }</p>
-    
-    <table role="presentation" style="width: 100%; margin: 8px auto;">
-      ${
+  <div style="margin-bottom: 24px; text-align: center;">
+  ${
+    organization.logo_url
+      ? `
+    <div style="width: 100%; margin-bottom: 16px; text-align: center;">
+      <img
+        src="${organization.logo_url}"
+        alt="${organization.name}"
+        style="max-width: 100%; max-height: 100px; object-fit: contain; margin: 0 auto;"
+      />
+    </div>
+  `
+      : ""
+  }
+  <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
+    ${organization.name}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="text-align: center; padding: 8px;">${formatPhoneNumber(
         organization.phone_number
-          ? `
-        <tr class="responsive-row">
-          <td style="text-align: center; padding: 8px; width: 200px;">${formatPhoneNumber(
-            organization.phone_number
-          )}</td>
-        </tr>`
-          : ""
-      }
-      ${
+      )}</td>
+    </tr>
+    <tr>
+      <td style="text-align: center; padding: 8px;">${formatEmail(
         organization.email
-          ? `
-        <tr class="responsive-row">
-          <td style="text-align: center; padding: 8px; width: 200px;">${formatEmail(
-            organization.email
-          )}</td>
-        </tr>`
-          : ""
-      }
-      ${
+      )}</td>
+    </tr>
+    <tr>
+      <td style="text-align: center; padding: 8px;">${formatWebsiteUrl(
         organization.website_url
-          ? `
-        <tr class="responsive-row">
-          <td style="text-align: center; padding: 8px; width: 200px;">${formatWebsiteUrl(
-            organization.website_url
-          )}</td>
-        </tr>`
-          : ""
-      }
-    </table>
-  </div>
+      )}</td>
+    </tr>
+  </table>
+</div>
 `;
 
 export const formatWebsiteUrl = (url: string | null | undefined): string => {

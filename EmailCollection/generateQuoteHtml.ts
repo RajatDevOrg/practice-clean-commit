@@ -1,5 +1,5 @@
 import { formatInTimeZone } from "date-fns-tz";
-import { formatCurrency, formatMoney } from "./emailUtils";
+import { formatCurrency, formatMoney, generateOrgHeader } from "./emailUtils";
 
 interface GenerateQuoteHtmlParams {
   rvDetails: any;
@@ -156,7 +156,7 @@ const generateTaxTable = (priceSummary: any) => {
   const taxRows = combineTaxes(priceSummary.taxRateCollection).map(
     (tax) => `
     <tr>
-      <td style="text-align: left; padding: 4px 0 4px 40px; font-size: 0.875rem; background-color: white !important;">${
+      <td style="text-align: left; padding: 4px 0 4px 0px; font-size: 0.875rem; background-color: white !important;">${
         tax.name
       } (${tax.rate}%):</td>
       <td style="text-align: right; padding: 4px 0; font-size: 0.875rem;  background-color: white !important;">$${formatMoney(
@@ -167,44 +167,6 @@ const generateTaxTable = (priceSummary: any) => {
   );
 
   return taxRows.join("");
-};
-
-// Helper function to format and make URLs clickable
-const formatWebsiteUrl = (url: string | null | undefined): string => {
-  if (!url) return "";
-
-  // Remove trailing slash
-  let formattedUrl = url.replace(/\/$/, "");
-
-  // Create display version (remove https:// or http://)
-  let displayUrl = formattedUrl;
-  if (displayUrl.startsWith("https://")) {
-    displayUrl = displayUrl.substring(8);
-  } else if (displayUrl.startsWith("http://")) {
-    displayUrl = displayUrl.substring(7);
-  }
-
-  // Make it clickable
-  return `<a href="${formattedUrl}" target="_blank" style="color: #0070f3; text-decoration: none;">${displayUrl}</a>`;
-};
-
-// Helper function to format and make email addresses clickable
-const formatEmail = (email: string | null | undefined): string => {
-  if (!email) return "";
-
-  // Make it clickable with mailto link
-  return `<a href="mailto:${email}" style="color: #0070f3; text-decoration: none;">${email}</a>`;
-};
-
-// Helper function to format and make phone numbers clickable
-const formatPhoneNumber = (phone: string | null | undefined): string => {
-  if (!phone) return "";
-
-  // Remove any non-digit characters for the href
-  const cleanPhone = phone.replace(/\D/g, "");
-
-  // Make it clickable with tel link
-  return `<a href="tel:${cleanPhone}" style="color: #0070f3; text-decoration: none;">${phone}</a>`;
 };
 
 export const generateQuoteHtml = ({
@@ -238,9 +200,9 @@ export const generateQuoteHtml = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Reservation Quote</title>
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #000000; }
-        .email-container { width: 600px; margin: 0 auto; padding: 10px; }
-        .section-header { font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+        body { font-family: Arial,  sans-serif; line-height: 1.6; color: #000000;  }
+        .email-container { max-width: 600px; width: 100%; margin: 0 auto; padding: 10px;  }
+        
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f9fafb; font-weight: 600; }
@@ -248,41 +210,12 @@ export const generateQuoteHtml = ({
         .tax-row { background-color: #ffffff !important; font-weight: normal; font-size: 0.875rem; }
       </style>
     </head>
-    <body>
-      <div class="email-container">
-        <div style="margin-bottom: 24px; text-align: center;">
-          ${
-            organization.logo_url
-              ? `
-            <div style="width: 100%; margin-bottom: 16px; text-align: center;">
-              <img
-                src="${organization.logo_url}"
-                alt="${organization.name}"
-                style="max-width: 100%; max-height: 100px; object-fit: contain; margin: 0 auto;"
-              />
-            </div>
-          `
-              : ""
-          }
-          <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
-            ${organization.name}
-          </p>
- <table style="width: 100%; margin: 8px auto;">            <tr>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatPhoneNumber(
-                organization.phone_number
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatEmail(
-                organization.email
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatWebsiteUrl(
-                organization.website_url
-              )}</td>
-            </tr>
-          </table>
-        </div>
-        
-      <h1 style="font-size: 20px; color: #333; margin: 0 0 20px 0; text-align: center;">
-        Hi ${customerFirstName}, here is your quote for the ${
+      <body style = "background-color: #f4f4f4;" >
+      <div class="email-container" style ="background-color: #ffffff;">
+       <!-- Removed "use generateOrgHeader from emailUtils.ts " -->
+                  ${generateOrgHeader(organization)}
+              <h1 style="font-size: 20px; color: #333; margin: 0 0 20px 0; text-align: center;">
+                Hi ${customerFirstName}, here is your quote for the ${
     rvDetails?.name || "RV"
   }<br>  from ${formatUTCDateForDisplay(
     dates.checkIn,
@@ -293,10 +226,10 @@ export const generateQuoteHtml = ({
     organizationSettings.timezone,
     "EEEE, MMMM d"
   )}
-      </h1>
+              </h1>
 
-        <div style="text-align: center; margin-bottom: 20px;">
-          <img src="${rvDetails?.primary_image_url || ""}" alt="${
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <img src="${rvDetails?.primary_image_url || ""}" alt="${
     rvDetails?.name || "RV"
   }" style="max-width: 100%; height: auto; margin-bottom: 20px;  border-radius: 8px;">
         </div>
@@ -306,8 +239,8 @@ export const generateQuoteHtml = ({
             Reserve Now for ${formatCurrency(priceSummary.reservationDeposit)}
           </a>
         </div>
-
-        <div class="section-header">Rental Dates</div>
+     <!-- Removed "section-header" class and wrote inline class" -->
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Rental Dates</div>
         <table style="margin-bottom: 20px;">
           <tr>
             <td>
@@ -329,8 +262,9 @@ export const generateQuoteHtml = ({
           </tr>
         </table>
 
-        <div class="section-header">Price Summary</div>
-        <div class="overflow-auto max-h-[500px] w-full">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Price Summary</div>
+        <!-- Remove the tailwind css classes -->
+        <div>
     
               ${generatePricingTable(priceSummary)}
           

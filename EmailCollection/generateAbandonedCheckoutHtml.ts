@@ -48,29 +48,27 @@ const combineTaxes = (taxRateCollection: any[]) => {
   });
 };
 
-const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
-  if (!priceSummary) return "";
-
+const generatePricingTable = (priceSummary: any) => {
   const rows: string[] = [];
 
   // Rental Fee Row
   if (priceSummary?.rentalFee) {
     const baseRate = priceSummary?.selectedUnit?.costPerPeriod || 0;
     rows.push(`
-    <tr class="main-row" style="background-color: white;">
-    <td style="padding: 2px 8px; word-wrap: break-word;">${
-      priceSummary?.selectedUnit?.name || "RV"
-    } Rental Fee</td>
-    <td style="text-align: right; padding: 2px 8px;">${
-      priceSummary?.chargePeriods
-    }</td>
-    <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-      baseRate
-    )}</td>
-    <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
-      priceSummary?.rentalFee
-    )}</td>
-  </tr>
+    <tr class="main-row" style="font-size: 0.875rem; background-color: white !important;">
+        <td style="padding: 2px 8px;">${
+          priceSummary?.selectedUnit?.name || "RV"
+        } Rental Fee</td>
+        <td style="text-align: right; padding: 2px 8px;">${
+          priceSummary?.chargePeriods
+        }</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          baseRate
+        )}</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          priceSummary?.rentalFee
+        )}</td>
+      </tr>
     `);
   }
 
@@ -146,13 +144,13 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   });
 
   return `
-   <table style="width: 100%; max-width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem;">
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
       <thead>
-        <tr style="background-color: #f3f4f6;">
-          <th style="text-align: left; padding: 2px 8px; white-space: nowrap;">Description</th>
-          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Qty</th>
-          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Amount</th>
-          <th style="text-align: right; padding: 2px 8px; white-space: nowrap;">Total</th>
+        <tr style="background-color: #f3f4f6; font-size: 0.875rem;">
+          <th style="text-align: left; padding: 8px;">Description</th>
+          <th style="text-align: right; padding: 8px;">Quantity</th>
+          <th style="text-align: right; padding: 8px;">Amount</th>
+          <th style="text-align: right; padding: 8px;">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -233,29 +231,19 @@ export const generateAbandonedCheckoutHtml = ({
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${emailTitle}</title>
-      <style>
-  
+     <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #000000; }
+        .email-container { width: 600px; margin: 0 auto; padding: 10px; }
         .section-header { font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f9fafb; font-weight: 600; }
         .main-row { background-color: white !important; }
         .tax-row { background-color: #ffffff !important; font-weight: normal; font-size: 0.875rem; }
-        .booking-details { background-color: #f9f9f9; border-radius: 5px; padding: 15px; margin: 20px 0; }
-        .cta-button { background-color: ${ctaButtonColor}; color: white; padding: 14px 24px; text-decoration: none; display: inline-block; margin: 20px 0; border-radius: 4px; font-weight: bold; }
       </style>
     </head>
-    <body style="margin: 0; padding: 0; overflow-x: hidden;   width: 100% ; background-color: #f9f9f9; text-align: center;  font-family: Arial, sans-serif;
-         line-height: 1.6;
-         color: #000000;" >
-         <div style=" max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-             padding: 8px;
-             box-sizing: border-box;
-            background-color: white;
-            text-align: left; 
-           " >
+    <body >
+      <div class="email-container">
             ${generateOrgHeader(organization)}
         
         <h1 style="font-size: 20px; color: #333; margin: 0 0 20px 0; text-align: center;">
@@ -294,7 +282,8 @@ export const generateAbandonedCheckoutHtml = ({
           priceSummary
             ? `
         <div class="section-header">Price Summary</div>
-        <div style="overflow-y: auto; overflow-x: hidden; max-height: 500px; width: 100%;">
+        <!-- Remove the tailwind css classes -->
+         <div>
           ${generatePricingTable(priceSummary, organizationSettings)}
         </div>
         <div style="border-top: 1px solid #e5e7eb; margin-top: 1rem; padding-top: 1rem;">
@@ -321,7 +310,7 @@ export const generateAbandonedCheckoutHtml = ({
         ${urgencyBox}
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${resumeUrl}" style="color: white;" class="cta-button">
+          <a href="${resumeUrl}" style="color: white; background-color: ${ctaButtonColor}; padding: 12px; border-radius: 4px; text-decoration: none; font-weight: bold; " class="cta-button">
             ${ctaButtonText}${
     priceSummary
       ? ` for ${formatCurrency(priceSummary.reservationDeposit || 0)}`
