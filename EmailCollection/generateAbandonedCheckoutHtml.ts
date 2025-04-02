@@ -233,8 +233,6 @@ export const generateAbandonedCheckoutHtml = ({
       <title>${emailTitle}</title>
       <style>
   
-        .section-header { font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
-        .email-container { max-width: 600px; width: 100%; margin: 0 auto; padding: 10px;  }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f9fafb; font-weight: 600; }
@@ -244,8 +242,8 @@ export const generateAbandonedCheckoutHtml = ({
         .cta-button { background-color: ${ctaButtonColor}; color: white; padding: 14px 24px; text-decoration: none; display: inline-block; margin: 20px 0; border-radius: 4px; font-weight: bold; }
       </style>
     </head>
-    <body style = "background-color: #f4f4f4;" >
-      <div class="email-container" style ="background-color: #ffffff;">
+     <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
+  <div style="max-width: 600px; width: 100%; margin: 0 auto; padding: 10px; box-sizing: border-box; background-color: #ffffff;">
             ${generateOrgHeader(organization)}
         
         <h1 style="font-size: 20px; color: #333; margin: 0 0 20px 0; text-align: center;">
@@ -310,9 +308,10 @@ export const generateAbandonedCheckoutHtml = ({
 
         ${urgencyBox}
         
-        <div style="text-align: center; margin: 30px 0;">
+        <div style="height: 80px; background-color: #f4f4f4;  display: block; text-align: center; line-height: 80px;">
         <!-- write inline css for mobile email client support -->
-          <a href="${resumeUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0070f3; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;"class="cta-button">
+          <a href="${resumeUrl}" style="display: inline-block; color: #ffffff; background-color: #3c83f6; font-weight: bold; 
+            text-decoration: none; padding: 12px 24px; border-radius: 6px; line-height: normal;">
             ${ctaButtonText}${
     priceSummary
       ? ` for ${formatCurrency(priceSummary.reservationDeposit || 0)}`
