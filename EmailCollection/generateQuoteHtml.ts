@@ -200,9 +200,7 @@ export const generateQuoteHtml = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Reservation Quote</title>
       <style>
-        body { font-family: Arial,  sans-serif; line-height: 1.6; color: #000000;  }
-        .email-container { max-width: 600px; width: 100%; margin: 0 auto; padding: 10px;  }
-        
+      
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f9fafb; font-weight: 600; }
@@ -210,8 +208,8 @@ export const generateQuoteHtml = ({
         .tax-row { background-color: #ffffff !important; font-weight: normal; font-size: 0.875rem; }
       </style>
     </head>
-      <body style = "background-color: #f4f4f4;" >
-      <div class="email-container" style ="background-color: #ffffff;">
+      <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
+  <div class="email-container" style="max-width: 600px; width: 100%; margin: 0 auto; padding: 10px; box-sizing: border-box; background-color: #ffffff;">
        <!-- Removed "use generateOrgHeader from emailUtils.ts " -->
                   ${generateOrgHeader(organization)}
               <h1 style="font-size: 20px; color: #333; margin: 0 0 20px 0; text-align: center;">
@@ -235,7 +233,8 @@ export const generateQuoteHtml = ({
         </div>
 
         <div style="text-align: center; margin-bottom: 20px;">
-          <a href="${checkoutUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #0070f3; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+          <a href="${checkoutUrl}" target="_blank"  style="display: inline-block; color: #ffffff; background-color: #3c83f6; font-weight: bold; 
+            text-decoration: none; padding: 12px 24px; border-radius: 6px; line-height: normal;">
             Reserve Now for ${formatCurrency(priceSummary.reservationDeposit)}
           </a>
         </div>
@@ -288,12 +287,13 @@ export const generateQuoteHtml = ({
         </div>
 
         <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Additional Information</div>
-        <div style="margin-bottom: 20px;">
+        <div style="margin: 0px 0px 20px 4px; text-align:left;">
           ${emailText.replace(/\n/g, "<br>")}
         </div>
         
-        <div style="text-align: center; margin-bottom: 20px;">
-          <a href="${checkoutUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #0070f3; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+        <div style="height: 80px; background-color: #f4f4f4;  display: block; text-align: center; line-height: 80px;">
+          <a href="${checkoutUrl}" target="_blank"  style="display: inline-block; color: #ffffff; background-color: #3c83f6; font-weight: bold; 
+            text-decoration: none; padding: 12px 24px; border-radius: 6px; line-height: normal;">
             Reserve Now for ${formatCurrency(priceSummary.reservationDeposit)}
           </a>
         </div>
