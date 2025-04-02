@@ -1,6 +1,12 @@
 import { parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import { formatMoney, generateOrgHeader } from "./emailUtils";
+import {
+  formatEmail,
+  formatMoney,
+  formatPhoneNumber,
+  formatWebsiteUrl,
+  generateOrgHeader,
+} from "./emailUtils";
 
 interface generateCompletedReservationHtmlParams {
   rvDetails: any;
@@ -44,28 +50,20 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   if (priceSummary?.rentalFee) {
     const baseRate = priceSummary?.selectedUnit?.costPerPeriod || 0;
     rows.push(`
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
-          <td style="padding: 4px 8px;">${
-            priceSummary?.selectedUnit?.name || "RV"
-          } Rental Fee</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
-          <td style="padding: 4px 8px;">${priceSummary?.chargePeriods}</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
-          <td style="padding: 4px 8px;">$${formatMoney(baseRate)}</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
-          <td style="padding: 4px 8px;">$${formatMoney(
-            priceSummary?.rentalFee
-          )}</td>
-        </tr>
-      </table>
+    <tr class="main-row" style="font-size: 0.875rem; background-color: white !important;">
+        <td style="padding: 2px 8px;">${
+          priceSummary?.selectedUnit?.name || "RV"
+        } Rental Fee</td>
+        <td style="text-align: right; padding: 2px 8px;">${
+          priceSummary?.chargePeriods
+        }</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          baseRate
+        )}</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          priceSummary?.rentalFee
+        )}</td>
+      </tr>
     `);
   }
 
@@ -73,51 +71,31 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
   if (priceSummary?.mileageFee) {
     if (priceSummary.manualMileageFee) {
       rows.push(`
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
-            <td style="padding: 4px 8px;">Mileage Fee</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
-            <td style="padding: 4px 8px;">-</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
-            <td style="padding: 4px 8px;">-</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
-            <td style="padding: 4px 8px;">$${formatMoney(
-              priceSummary.mileageFee
-            )}</td>
-          </tr>
-        </table>
+        <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
+          <td style="padding: 2px 8px;">Mileage Fee</td>
+          <td style="text-align: right; padding: 2px 8px;">-</td>
+          <td style="text-align: right; padding: 2px 8px;">-</td>
+          <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+            priceSummary.mileageFee
+          )}</td>
+        </tr>
       `);
     } else if (priceSummary.appliedMileageRule) {
       const billableMiles = priceSummary.billable_miles || 0;
       const mileageRate = priceSummary.appliedMileageRule.tiers[0]?.rate || 0;
       rows.push(`
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
-            <td style="padding: 4px 8px;">Mileage Fee</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
-            <td style="padding: 4px 8px;">${billableMiles.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
-            <td style="padding: 4px 8px;">$${formatMoney(mileageRate)}/mile</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
-            <td style="padding: 4px 8px;">$${formatMoney(
-              priceSummary.mileageFee
-            )}</td>
-          </tr>
-        </table>
+        <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
+          <td style="padding: 2px 8px;">Mileage Fee</td>
+          <td style="text-align: right; padding: 2px 8px;">${billableMiles.toFixed(
+            2
+          )}</td>
+          <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+            mileageRate
+          )}/mile</td>
+          <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+            priceSummary.mileageFee
+          )}</td>
+        </tr>
       `);
     }
   }
@@ -129,71 +107,66 @@ const generatePricingTable = (priceSummary: any, organizationSettings: any) => {
       (priceSummary.departureGeneratorHours || 0);
     const generatorRate = priceSummary.generatorFee / hoursUsed;
     rows.push(`
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
-          <td style="padding: 4px 8px;">Generator Fee</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
-          <td style="padding: 4px 8px;">${hoursUsed.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
-          <td style="padding: 4px 8px;">$${formatMoney(generatorRate)}/hour</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
-          <td style="padding: 4px 8px;">$${formatMoney(
-            priceSummary.generatorFee
-          )}</td>
-        </tr>
-      </table>
+      <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
+        <td style="padding: 2px 8px;">Generator Fee</td>
+        <td style="text-align: right; padding: 2px 8px;">${hoursUsed.toFixed(
+          2
+        )}</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          generatorRate
+        )}/hour</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          priceSummary.generatorFee
+        )}</td>
+      </tr>
     `);
   }
 
   // Addon Rows
   (priceSummary?.selectedAddons || []).forEach((addon: any) => {
     rows.push(`
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.875rem; background-color: white;">
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Description:</td>
-          <td style="padding: 4px 8px;">${addon.name}</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Quantity:</td>
-          <td style="padding: 4px 8px;">${addon.quantity}</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Amount:</td>
-          <td style="padding: 4px 8px;">$${formatMoney(addon.baseFee)}</td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; font-weight: bold; width: 40%;">Total:</td>
-          <td style="padding: 4px 8px;">$${formatMoney(addon.totalFee)}</td>
-        </tr>
-      </table>
+      <tr class="main-row" style="font-size: 0.875rem; background-color: white;">
+        <td style="padding: 2px 8px;">${addon.name}</td>
+        <td style="text-align: right; padding: 2px 8px;">${addon.quantity}</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          addon.baseFee
+        )}</td>
+        <td style="text-align: right; padding: 2px 8px;">$${formatMoney(
+          addon.totalFee
+        )}</td>
+      </tr>
     `);
   });
 
   return `
-    <div style="width: 100%;">
-      ${rows.join("")}
-    </div>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <thead>
+        <tr style="background-color: #f3f4f6; font-size: 0.875rem;">
+          <th style="text-align: left; padding: 8px;">Description</th>
+          <th style="text-align: right; padding: 8px;">Quantity</th>
+          <th style="text-align: right; padding: 8px;">Amount</th>
+          <th style="text-align: right; padding: 8px;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.join("")}
+      </tbody>
+    </table>
   `;
 };
+
 const generateTaxTable = (priceSummary: any) => {
   const taxRows = combineTaxes(priceSummary.taxRateCollection).map(
     (tax) => `
-  <tr>
-    <td style="text-align: left; padding: 4px 0 4px 4px; font-size: 0.875rem; background-color: white !important; width: 75%;">${
-      tax.name
-    } (${tax.rate}%):</td>
-    <td style="text-align: right; padding: 4px 0; font-size: 0.875rem; background-color: white !important; width: 25%;">$${formatMoney(
-      tax.amount
-    )}</td>
-  </tr>
-`
+    <tr>
+      <td style="text-align: left; padding: 4px 0 4px 0px; font-size: 0.875rem; background-color: white !important;">${
+        tax.name
+      } (${tax.rate}%):</td>
+      <td style="text-align: right; padding: 4px 0; font-size: 0.875rem;  background-color: white !important;">$${formatMoney(
+        tax.amount
+      )}</td>
+    </tr>
+  `
   );
 
   return taxRows.join("");
@@ -223,9 +196,8 @@ export const generateCompletedReservationHtml = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Your Reservation is Confirmed!</title>
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #000000; }
-        .email-container { width: 600px; margin: 0 auto; padding: 10px; }
-        .section-header { font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+        
+
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f9fafb; font-weight: 600; }
@@ -233,18 +205,11 @@ export const generateCompletedReservationHtml = ({
         .tax-row { background-color: #ffffff !important; font-weight: normal; font-size: 0.875rem; }
       </style>
     </head>
-    <body style="margin: 0; padding: 0; overflow-x: hidden;   width: 100% ; background-color: #f9f9f9;   box-sizing: border-box; text-align: center;  font-family: Arial, sans-serif;
-         line-height: 1.6;
-         color: #000000;" >
-      <div style=" max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-             padding: 8px;
-             box-sizing: border-box;
-            background-color: white;
-            text-align: left; 
-           ">
-          ${generateOrgHeader(organization)}
+     <!-- update the body and div with "email-container" class to align the content in the center horizontally " -->
+  <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
+  <div class="email-container" style="max-width: 600px; width: 100%; margin: 0 auto; padding: 10px; box-sizing: border-box; background-color: #ffffff;">
+       <!-- Removed common header and use generateOrgHeader from emailUtils.ts -->
+       ${generateOrgHeader(organization)}
         
         <h1 style="font-size: 24px; color: #333; margin: 0 0 20px 0; text-align: center;">
         Congratulations, you have reserved the ${rvDetails?.name || "RV"} <br>
@@ -260,11 +225,11 @@ export const generateCompletedReservationHtml = ({
         <div style="text-align: center; margin-bottom: 20px;">
           <img src="${rvDetails?.primary_image_url || ""}" alt="${
     rvDetails?.name || "RV"
-  }" style="max-width: 100%; height: auto; margin-bottom: 20px;  border-radius: 8px;">
+  }" style="max-width: 100%; height: auto; margin-bottom: 20px;         border-radius: 8px;">
         </div>
 
 
-        <div class="section-header">Rental Dates</div>
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; text-align:left;">Rental Dates</div>
         <table style="margin-bottom: 20px;">
           <tr>
             <td>
@@ -284,8 +249,9 @@ export const generateCompletedReservationHtml = ({
           </tr>
         </table>
 
-        <div class="section-header">Price Summary</div>
-      <div style="width: 100%; margin-bottom: 20px;">
+       <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; text-align:left;">Price Summary</div>
+        <!-- Remove the tailwind css classes -->
+        <div>
     
               ${generatePricingTable(priceSummary, organizationSettings)}
           
@@ -308,19 +274,21 @@ export const generateCompletedReservationHtml = ({
           </table>
         </div>
 
-        <div class="section-header">Additional Information</div>
-        <div style="margin-bottom: 20px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; text-align:left;">Additional Information</div>
+        <div style="margin: 0px 0px 20px 4px; text-align:left;">
           ${emailText.replace(/\n/g, "<br>")}
         </div>
-      </div>
-  <div style="margin-top: 20px; text-align: center;">
+         <div style="height: 80px; background-color: #f4f4f4;  display: block; text-align: center; line-height: 80px;">
   <a href="https://example.com/public/reservations/${
     priceSummary.reservationId
-  }/view-pdf" 
-     style="display: inline-block; color: #3c83f6; font-weight: bold; text-decoration: none; border-radius: 6px;">
+  }/view-pdf"
+     style="display: inline-block; color: #ffffff; background-color: #3c83f6; font-weight: bold; 
+            text-decoration: none; padding: 12px 24px; border-radius: 6px; line-height: normal;">
     Download PDF Receipt
   </a>
 </div>
+      </div>
+
     </body>
     </html>
   `;
