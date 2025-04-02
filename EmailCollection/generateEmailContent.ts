@@ -1,7 +1,13 @@
 import { formatInTimeZone } from "date-fns-tz";
 
-import { formatDate, safeGet } from "~/lib/utils/formatters";
-import { formatEmail, formatPhoneNumber, formatWebsiteUrl } from "./emailUtils";
+import {
+  formatEmail,
+  formatMoney,
+  formatPhoneNumber,
+  formatWebsiteUrl,
+  safeGet,
+  formatDate,
+} from "./emailUtils";
 
 const getTaxAmount = (taxes: any[], description: string) => {
   const tax = taxes?.find((tax: any) => tax.description === description);
@@ -179,12 +185,11 @@ export const generateEmailContent = (
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Reservation Details</title>
         <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #000000; }
-        .email-container { width: 600px; margin: 0 auto; padding: 10px; }
+    
         .header { margin-bottom: 20px; }
         .logo { width: 192px; height: auto; }
         .logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .section-header { font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+       
         .content-columns { display: flex; }
    
         table { width: 100%; border-collapse: collapse; }
@@ -195,10 +200,14 @@ export const generateEmailContent = (
         .tax-row { background-color: #ffffff ! important; }
         </style>
       </head>
-      <body>
-        <div class="email-container">
+
+     <!-- Adjust width for responsiveness and use box-sizing: border-box for centered alignment. -->
+
+      <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
+     
+      <div  style="max-width: 600px; width: 100%; border: 2px solid #f4f4f4; margin: 0 auto; padding: 10px; box-sizing: border-box; background-color: #ffffff;">
           <!-- Organization Header -->
-          <div style="margin-bottom: 24px; text-align: center;">
+          <div style="margin-bottom: 24px;   text-align: center;">
             ${
               safeGet(organization, "logo_url")
                 ? `
@@ -215,18 +224,38 @@ export const generateEmailContent = (
             <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
               ${safeGet(organization, "name")}
             </p>
-     <table style="width: 100%; margin: 8px auto;">            <tr>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatPhoneNumber(
-                organization.phone_number
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatEmail(
-                organization.email
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatWebsiteUrl(
-                organization.website_url
-              )}</td>
-            </tr>
-          </table>
+            <table role="presentation" style="width: 100%; margin: 8px auto;">
+            ${
+              organization.phone_number
+                ? `
+              <tr class="responsive-row">
+                <td style="text-align: center; padding: 8px; width: 200px;">${formatPhoneNumber(
+                  organization.phone_number
+                )}</td>
+              </tr>`
+                : ""
+            }
+            ${
+              organization.email
+                ? `
+              <tr class="responsive-row">
+                <td style="text-align: center; padding: 8px; width: 200px;">${formatEmail(
+                  organization.email
+                )}</td>
+              </tr>`
+                : ""
+            }
+            ${
+              organization.website_url
+                ? `
+              <tr class="responsive-row">
+                <td style="text-align: center; padding: 8px; width: 200px;">${formatWebsiteUrl(
+                  organization.website_url
+                )}</td>
+              </tr>`
+                : ""
+            }
+            </table>
           </div>
 
           ${
@@ -258,49 +287,54 @@ export const generateEmailContent = (
     }" style="max-width: 100%; height: auto; margin-bottom: 20px; border-radius: 8px;">
           </div>
 
-          <div class="section-header">Rental Dates</div>
-          <table style="margin-bottom: 20px;">
-            <tr>
-              <td>
-                <strong>${
-                  safeGet(reservation, "is_delivery") ? "Delivery" : "Departure"
-                }</strong><br>
-                ${formatUTCDateForDisplay(
-                  safeGet(reservation, "check_in_date"),
-                  organizationSettings.timezone,
-                  "MMM d, yyyy h:mm a"
-                )}<br>
-                ${
-                  safeGet(reservation, "is_delivery")
-                    ? safeGet(
-                        reservation,
-                        "delivery_location.formatted_address"
-                      )
-                    : getStoreAddress(pickupStore)
-                }
-              </td>
-              <td style="text-align: right;">
-                <strong>${
-                  safeGet(reservation, "is_delivery") ? "Pickup" : "Return"
-                }</strong><br>
-                ${formatUTCDateForDisplay(
-                  safeGet(reservation, "check_out_date"),
-                  organizationSettings.timezone,
-                  "MMM d, yyyy h:mm a"
-                )}<br>
-                ${
-                  safeGet(reservation, "is_delivery")
-                    ? safeGet(
-                        reservation,
-                        "delivery_location.formatted_address"
-                      )
-                    : getStoreAddress(pickupStore)
-                }
-              </td>
-            </tr>
-          </table>
+          <div style = "font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;" >Rental Dates</div>
 
-          <div class="section-header">Price Summary</div>
+        <!-- Stack sections vertically for better email compatibility -->
+
+        <table style="margin-bottom: 20px;">
+          <tr>
+            <td>
+              <strong>${
+                safeGet(reservation, "is_delivery") ? "Delivery" : "Departure"
+              }</strong><br>
+
+              ${formatUTCDateForDisplay(
+                safeGet(reservation, "check_in_date"),
+                organizationSettings.timezone,
+                "MMM d, yyyy h:mm a"
+              )}
+
+              <br>
+              ${
+                safeGet(reservation, "is_delivery")
+                  ? safeGet(reservation, "delivery_location.formatted_address")
+                  : getStoreAddress(pickupStore)
+              }
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>${
+                safeGet(reservation, "is_delivery") ? "Pickup" : "Return"
+              }</strong><br>
+
+              ${formatUTCDateForDisplay(
+                safeGet(reservation, "check_out_date"),
+                organizationSettings.timezone,
+                "MMM d, yyyy h:mm a"
+              )}
+
+              <br>
+              ${
+                safeGet(reservation, "is_delivery")
+                  ? safeGet(reservation, "delivery_location.formatted_address")
+                  : getStoreAddress(pickupStore)
+              }
+            </td>
+          </tr>
+        </table>
+
+          <div style = "font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Price Summary</div>
           <div class="overflow-auto max-h-[500px] w-full">
             ${generatePricingTable(priceSummary, organizationSettings)}
           </div>
@@ -357,7 +391,7 @@ export const generateEmailContent = (
             </table>
           </div>
 
-          <div class="section-header">Transaction History</div>
+          <div style = "font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Transaction History</div>
           <table style="width: 100%; font-size: 14px; margin-bottom: 20px;">
             <thead>
               <tr>
@@ -399,7 +433,7 @@ export const generateEmailContent = (
             </tbody>
           </table>
 
-          <div class="section-header">Rental Unit Details</div>
+         <div style = "font-size: 18px; font-weight: 600; margin-bottom: 10px; background-color: #f3f4f6; padding: 10px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">Rental Unit Details</div>
           <div style="font-size: 14px; padding: 10px; margin-bottom: 20px;">
             <p><strong>Unit Name:</strong> ${safeGet(
               reservation,
@@ -430,6 +464,7 @@ export const generateEmailContent = (
 
           <!-- Footer -->
           <div class="footer">Email sent at: ${currentTime}</div>
+        
         </div>
       </body>
       </html>
