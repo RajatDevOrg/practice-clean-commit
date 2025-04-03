@@ -62,6 +62,7 @@ export const generateRejectEmailContent = ({
 }: RejectEmailContentProps) => {
   const orgHeader = organization
     ? `
+        <!--  Add generateOrgHeader from emailUtils module -->
     ${generateOrgHeader(organization)}
   `
     : "";
@@ -76,17 +77,21 @@ export const generateRejectEmailContent = ({
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #000000; margin: 0; padding: 0; }
         .email-container { width: 600px; margin: 0 auto; padding: 10px; }
+         <!-- add styles for th, td -->
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
       </style>
     </head>
+
     <!-- update the body and div with "email-container" class to align the content in the center horizontally " -->
-  <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
-  <div class="email-container" style="max-width: 600px; width: 100%; margin: 0 auto; padding: 10px; box-sizing: border-box; background-color: #ffffff;">
+
+      <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
+      <div class="email-container" style="max-width: 600px; width: 100%; margin: 0 auto; padding: 10px; box-sizing: border-box; background-color: #ffffff;">
         ${orgHeader}
         <p>Dear ${customerName},</p>
         <p>Regarding your reservation request #${reservationNumber}:</p>
         <p>${customMessage}</p>
       </div>
-    </body>
+     </body>
     </html>
   `;
 
