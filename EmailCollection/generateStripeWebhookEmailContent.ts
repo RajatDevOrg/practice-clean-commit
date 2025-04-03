@@ -1,8 +1,13 @@
-import { parseISO } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+import { parseISO } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
-import { dates } from '~/lib/utils/dates';
-import { formatMoney, safeGet } from '~/lib/utils/formatters';
+import { safeGet, formatMoney } from "./emailUtils";
+
+// dates function to format date
+const dates = {
+  formatDisplay: (dateString) =>
+    formatInTimeZone(parseISO(dateString), "America/Chicago", "MM/dd/yyyy"),
+};
 
 export const generateStripeWebhookEmailContent = (
   reservation: any,
@@ -13,16 +18,16 @@ export const generateStripeWebhookEmailContent = (
   isRequestOnly: boolean = false,
   transactions: any[] = [],
   primaryDriverVerification: any = null,
-  additionalDriverVerifications: any[] = [],
+  additionalDriverVerifications: any[] = []
 ): string => {
   // Format the store address in a more explicit way
-  let pickupAddress = 'Address not available';
+  let pickupAddress = "Address not available";
   if (storeData) {
-    const street = `${storeData.address || ''}${
-      storeData.suite ? `, ${storeData.suite}` : ''
+    const street = `${storeData.address || ""}${
+      storeData.suite ? `, ${storeData.suite}` : ""
     }`;
-    const cityStateZip = `${storeData.city || ''}, ${storeData.state || ''} ${
-      storeData.zip_code || ''
+    const cityStateZip = `${storeData.city || ""}, ${storeData.state || ""} ${
+      storeData.zip_code || ""
     }`;
     pickupAddress = `${street}\n${cityStateZip}`;
   }
@@ -31,64 +36,64 @@ export const generateStripeWebhookEmailContent = (
 
   const formatUTCDateForDisplayDays = (
     utcDateString: string | undefined,
-    timezone: string,
+    timezone: string
   ) => {
-    if (!utcDateString) return 'Not set';
+    if (!utcDateString) return "Not set";
     const date = parseISO(utcDateString);
-    return formatInTimeZone(date, timezone, 'MMM dd, yyyy');
+    return formatInTimeZone(date, timezone, "MMM dd, yyyy");
   };
 
   const formatUTCDateForDisplayTime = (
     utcDateString: string | undefined,
-    timezone: string,
+    timezone: string
   ) => {
-    if (!utcDateString) return 'Not set';
+    if (!utcDateString) return "Not set";
     const date = parseISO(utcDateString);
-    return formatInTimeZone(date, timezone, 'HH:mm zzz');
+    return formatInTimeZone(date, timezone, "HH:mm zzz");
   };
 
   const formatUTCDateForDisplay = (
     utcDateString: string | undefined,
     timezone: string,
-    formatString: string,
+    formatString: string
   ) => {
-    if (!utcDateString) return 'Not set';
+    if (!utcDateString) return "Not set";
     const date = parseISO(utcDateString);
     return formatInTimeZone(date, timezone, formatString);
   };
 
   const getGoogleMapsLink = (address: string) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      address,
+      address
     )}`;
   };
 
   // Function to format address as two lines without comma at end of first line and without ", USA"
   const getFormattedAddress = (location: any) => {
-    let address = 'Address unavailable';
+    let address = "Address unavailable";
 
     // If location is already an object, use it directly
     if (
       location &&
-      typeof location === 'object' &&
+      typeof location === "object" &&
       location.formatted_address
     ) {
       address = location.formatted_address;
     }
     // If location is a string, try to parse it
-    else if (typeof location === 'string') {
+    else if (typeof location === "string") {
       try {
         const parsedLocation = JSON.parse(location);
-        address = parsedLocation.formatted_address || 'Address unavailable';
+        address = parsedLocation.formatted_address || "Address unavailable";
       } catch (error) {
-        console.error('Error parsing location:', error);
-        return 'Address unavailable';
+        console.error("Error parsing location:", error);
+        return "Address unavailable";
       }
     }
 
-    if (address !== 'Address unavailable') {
+    if (address !== "Address unavailable") {
       // Remove ", USA" from the end
-      let formattedAddress = address.replace(/, USA$/, '');
+      let formattedAddress = address.replace(/, USA$/, "");
 
       // Try to extract the state and zip code
       const stateZipRegex = /,\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/;
@@ -101,11 +106,11 @@ export const generateStripeWebhookEmailContent = (
         // Get the rest of the address without the state and zip
         const addressWithoutStateZip = formattedAddress.substring(
           0,
-          formattedAddress.length - stateZipMatch[0].length,
+          formattedAddress.length - stateZipMatch[0].length
         );
 
         // Find the last comma in the remaining address (to separate street from city)
-        const lastCommaIndex = addressWithoutStateZip.lastIndexOf(',');
+        const lastCommaIndex = addressWithoutStateZip.lastIndexOf(",");
 
         if (lastCommaIndex !== -1) {
           // Extract street and city
@@ -129,8 +134,8 @@ export const generateStripeWebhookEmailContent = (
   };
 
   const confirmationMessage = isRequestOnly
-    ? 'Your reservation request has been submitted for review. You will be notified when the request is approved!'
-    : 'Your reservation is confirmed!';
+    ? "Your reservation request has been submitted for review. You will be notified when the request is approved!"
+    : "Your reservation is confirmed!";
 
   return `
     <!DOCTYPE html>
@@ -138,11 +143,11 @@ export const generateStripeWebhookEmailContent = (
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Reservation ${isRequestOnly ? 'Request' : 'Confirmation'}</title>
+      <title>Reservation ${isRequestOnly ? "Request" : "Confirmation"}</title>
       <style>
         body { font-family: Cereal, 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #222222; background-color: #f7f7f7; }
-        .container { width: 600px; margin: 0 auto; background-color: #ffffff; }
-        .header { padding: 24px 48px; }
+        
+        
         .content { padding: 0; }
         .divider { border-top: 1px solid #dddddd; margin: 24px 0; }
         .footer { text-align: center; font-size: 14px; color: #767676; padding: 24px; }
@@ -166,12 +171,15 @@ export const generateStripeWebhookEmailContent = (
         .font-bold { font-weight: bold; }
       </style>
     </head>
-    <body>
-      <table class="container" cellpadding="0" cellspacing="0" border="0" align="center" width="100%">
+    <!-- Add inline styles  -->
+      <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
+      <div style =" border: 4px solid #f4f4f4; max-width: 600px; width: 100%; margin: auto; " >
+      
+      <table  style="max-width: 600px; width: 100%;  margin: 0 auto;  box-sizing: border-box; background-color: #ffffff;" class="container" cellpadding="0" cellspacing="0" border="0" align="center" width="100%  ">
         <tr>
           <td>
             <!-- Organization Header -->
-            <table class="header" cellpadding="0" cellspacing="0" border="0" align="center" width="100%" style="margin-bottom: 24px;">
+            <table class="header" style = "padding: 24px 48px;" cellpadding="0" cellspacing="0" border="0" align="center" width="100%" style="margin-bottom: 24px;">
               <tr>
                 <td width="50%" style="vertical-align: top;">
                   ${
@@ -179,19 +187,19 @@ export const generateStripeWebhookEmailContent = (
                       ? `<div style="width: 100%; height: 100px; display: table-cell; vertical-align: middle;">
                           <img src="${organization.logo_url}" alt="${organization.name}" style="max-width: 100%; max-height: 100%; object-fit: contain; width: auto; height: auto;">
                         </div>`
-                      : ''
+                      : ""
                   }
                 </td>
                 <td width="50%" style="vertical-align: top; text-align: right;">
                   <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${
                     organization.name
                   }</p>
-                  <p>${organization.phone_number || ''}</p>
-                  <p>${organization.email || ''}</p>
+                  <p>${organization.phone_number || ""}</p>
+                  <p>${organization.email || ""}</p>
                   <p>${
                     organization.website_url
-                      ? organization.website_url.replace(/\/$/, '')
-                      : ''
+                      ? organization.website_url.replace(/\/$/, "")
+                      : ""
                   }</p>
                 </td>
               </tr>
@@ -206,14 +214,16 @@ export const generateStripeWebhookEmailContent = (
                 <td width="50%" style="text-align: right;">
                   <span>Reservation #${safeGet(
                     reservation,
-                    'reservation_number',
+                    "reservation_number"
                   )}</span>
                 </td>
               </tr>
             </table>
             
             <!-- Main Content Two Column Layout -->
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" class="content">
+            <!-- add border to the bottom -->
+
+           <table cellpadding="0" cellspacing="0" style=" border-bottom: 2px solid #f4f4f4;" width="100%" class="content">
               <tr>
                 <!-- Left Column -->
                 <td width="40%" style="vertical-align: top; padding-right: 16px; border-right: 1px solid #e5e7eb;">
@@ -222,7 +232,7 @@ export const generateStripeWebhookEmailContent = (
                   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 16px;">
                     <tr>
                       <td class="section-header" style="background-color: #f3f4f6; padding: 8px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; font-weight: 600; margin-bottom: 8px;">
-                        ${safeGet(reservation, 'rvs.name')}
+                        ${safeGet(reservation, "rvs.name")}
                       </td>
                     </tr>
                     <tr>
@@ -232,63 +242,61 @@ export const generateStripeWebhookEmailContent = (
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">Year:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.year',
+                              "rvs.year"
                             )}</td>
                           </tr>
                           <tr>
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">Make:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.make',
+                              "rvs.make"
                             )}</td>
                           </tr>
                           <tr>
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">Model:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.model',
+                              "rvs.model"
                             )}</td>
                           </tr>
                           <tr>
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">Class:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.type',
+                              "rvs.type"
                             )}</td>
                           </tr>
                           <tr>
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">Length:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.length',
+                              "rvs.length"
                             )} ${
-                              organizationSettings.measurementUnits?.length ||
-                              ''
-                            }</td>
+    organizationSettings.measurementUnits?.length || ""
+  }</td>
                           </tr>
                           <tr>
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">Height:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.height',
+                              "rvs.height"
                             )} ${
-                              organizationSettings.measurementUnits?.length ||
-                              ''
-                            }</td>
+    organizationSettings.measurementUnits?.length || ""
+  }</td>
                           </tr>
                           <tr>
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">VIN:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.vin',
+                              "rvs.vin"
                             )}</td>
                           </tr>
                           <tr>
                             <td class="grid-cell-label" style="width: 100px; padding: 2px 0;">License:</td>
                             <td class="grid-cell-value" style="padding: 2px 0;">${safeGet(
                               reservation,
-                              'rvs.license_plate',
-                            )} ${safeGet(reservation, 'rvs.state')}</td>
+                              "rvs.license_plate"
+                            )} ${safeGet(reservation, "rvs.state")}</td>
                           </tr>
                         </table>
                       </td>
@@ -313,8 +321,8 @@ export const generateStripeWebhookEmailContent = (
                           ${
                             primaryDriverVerification?.verificationData
                               ?.master_verified
-                              ? 'Verified'
-                              : 'Not Verified'
+                              ? "Verified"
+                              : "Not Verified"
                           }
                         </p>
                         
@@ -331,12 +339,12 @@ export const generateStripeWebhookEmailContent = (
                                  } — ${
                                    driverVerification?.verificationData
                                      ?.master_verified
-                                     ? 'Verified'
-                                     : 'Not Verified'
+                                     ? "Verified"
+                                     : "Not Verified"
                                  }</p>`;
                                })
-                               .join('')}`
-                            : ''
+                               .join("")}`
+                            : ""
                         }
                       </td>
                     </tr>
@@ -352,7 +360,7 @@ export const generateStripeWebhookEmailContent = (
                     <tr>
                       <td style="padding: 8px; font-size: 14px;">
                         <p>Security Deposit: $${formatMoney(
-                          priceSummary?.securityDeposit || 0,
+                          priceSummary?.securityDeposit || 0
                         )}</p>
                         ${
                           priceSummary?.mileageFee > 0
@@ -361,11 +369,11 @@ export const generateStripeWebhookEmailContent = (
                                 (priceSummary.distance || 1)
                               ).toFixed(2)} ${
                                 organizationSettings.measurementUnits
-                                  ?.distance === 'km'
-                                  ? 'per kilometer'
-                                  : 'per mile'
+                                  ?.distance === "km"
+                                  ? "per kilometer"
+                                  : "per mile"
                               }</p>`
-                            : ''
+                            : ""
                         }
                         <p>Insurance Policy: [Insert insurance policy]</p>
                         <p>Cancellation Policy: [Insert cancellation policy]</p>
@@ -386,30 +394,30 @@ export const generateStripeWebhookEmailContent = (
                             <td class="section-header" style="background-color: #f3f4f6; padding: 8px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; font-weight: 600; margin-bottom: 8px;">
                               ${
                                 !!reservation.delivery_location
-                                  ? 'Delivery'
-                                  : 'Departure'
+                                  ? "Delivery"
+                                  : "Departure"
                               }
                             </td>
                           </tr>
                           <tr>
                             <td style="padding: 8px; font-size: 14px;">
                               <p>${formatUTCDateForDisplay(
-                                safeGet(reservation, 'check_in_date'),
+                                safeGet(reservation, "check_in_date"),
                                 organizationSettings.timezone,
-                                'EEEE, MMMM d',
+                                "EEEE, MMMM d"
                               )}</p>
                               ${
                                 !!reservation.delivery_location
                                   ? getFormattedAddress(
-                                      reservation.delivery_location,
+                                      reservation.delivery_location
                                     )
-                                      .split('\n')
+                                      .split("\n")
                                       .map((line, index) => `<p>${line}</p>`)
-                                      .join('')
+                                      .join("")
                                   : storeAddress
-                                      .split('\n')
+                                      .split("\n")
                                       .map((line, index) => `<p>${line}</p>`)
-                                      .join('')
+                                      .join("")
                               }
                             </td>
                           </tr>
@@ -421,30 +429,30 @@ export const generateStripeWebhookEmailContent = (
                             <td class="section-header" style="background-color: #f3f4f6; padding: 8px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; font-weight: 600; margin-bottom: 8px;">
                               ${
                                 !!reservation.delivery_location
-                                  ? 'Pickup'
-                                  : 'Return'
+                                  ? "Pickup"
+                                  : "Return"
                               }
                             </td>
                           </tr>
                           <tr>
                             <td style="padding: 8px; font-size: 14px;">
                               <p>${formatUTCDateForDisplay(
-                                safeGet(reservation, 'check_out_date'),
+                                safeGet(reservation, "check_out_date"),
                                 organizationSettings.timezone,
-                                'EEEE, MMMM d',
+                                "EEEE, MMMM d"
                               )}</p>
                               ${
                                 !!reservation.delivery_location
                                   ? getFormattedAddress(
-                                      reservation.delivery_location,
+                                      reservation.delivery_location
                                     )
-                                      .split('\n')
+                                      .split("\n")
                                       .map((line, index) => `<p>${line}</p>`)
-                                      .join('')
+                                      .join("")
                                   : storeAddress
-                                      .split('\n')
+                                      .split("\n")
                                       .map((line, index) => `<p>${line}</p>`)
-                                      .join('')
+                                      .join("")
                               }
                             </td>
                           </tr>
@@ -479,10 +487,10 @@ export const generateStripeWebhookEmailContent = (
                                 priceSummary?.nights || 1
                               }</td>
                               <td style="padding: 4px; text-align: right;">$${formatMoney(
-                                priceSummary?.nightlyRate || 0,
+                                priceSummary?.nightlyRate || 0
                               )}</td>
                               <td style="padding: 4px; text-align: right;">$${formatMoney(
-                                priceSummary?.rentalFee || 0,
+                                priceSummary?.rentalFee || 0
                               )}</td>
                             </tr>
                             
@@ -495,17 +503,17 @@ export const generateStripeWebhookEmailContent = (
                                     priceSummary?.distance || 0
                                   } ${
                                     organizationSettings.measurementUnits
-                                      ?.distance || 'miles'
+                                      ?.distance || "miles"
                                   }</td>
                                   <td style="padding: 4px; text-align: right;">$${(
                                     priceSummary.mileageFee /
                                     (priceSummary.distance || 1)
                                   ).toFixed(2)}</td>
                                   <td style="padding: 4px; text-align: right;">$${formatMoney(
-                                    priceSummary?.mileageFee || 0,
+                                    priceSummary?.mileageFee || 0
                                   )}</td>
                                 </tr>`
-                                : ''
+                                : ""
                             }
                             
                             <!-- Addons -->
@@ -520,15 +528,15 @@ export const generateStripeWebhookEmailContent = (
                                   addon.quantity || 1
                                 }</td>
                                 <td style="padding: 4px; text-align: right;">$${formatMoney(
-                                  addon.price || 0,
+                                  addon.price || 0
                                 )}</td>
                                 <td style="padding: 4px; text-align: right;">$${formatMoney(
-                                  (addon.price || 0) * (addon.quantity || 1),
+                                  (addon.price || 0) * (addon.quantity || 1)
                                 )}</td>
                               </tr>
-                            `,
+                            `
                               )
-                              .join('')}
+                              .join("")}
                           </tbody>
                         </table>
                         
@@ -537,7 +545,7 @@ export const generateStripeWebhookEmailContent = (
                           <tr>
                             <td style="padding: 4px; text-align: right; font-weight: bold; width: 80%;">Subtotal:</td>
                             <td style="padding: 4px; text-align: right; width: 20%;">$${formatMoney(
-                              priceSummary?.subtotal || 0,
+                              priceSummary?.subtotal || 0
                             )}</td>
                           </tr>
                           ${
@@ -545,37 +553,37 @@ export const generateStripeWebhookEmailContent = (
                               ? `<tr>
                                 <td style="padding: 4px; text-align: right; font-weight: bold; width: 80%;">Tax:</td>
                                 <td style="padding: 4px; text-align: right; width: 20%;">$${formatMoney(
-                                  priceSummary?.taxAmount || 0,
+                                  priceSummary?.taxAmount || 0
                                 )}</td>
                               </tr>`
-                              : ''
+                              : ""
                           }
                           ${
                             priceSummary?.discount > 0
                               ? `<tr>
                                 <td style="padding: 4px; text-align: right; font-weight: bold; width: 80%;">Discount:</td>
                                 <td style="padding: 4px; text-align: right; width: 20%;">-$${formatMoney(
-                                  priceSummary?.discount || 0,
+                                  priceSummary?.discount || 0
                                 )}</td>
                               </tr>`
-                              : ''
+                              : ""
                           }
                           <tr>
                             <td style="padding: 4px; text-align: right; font-weight: bold; width: 80%; border-top: 2px solid #e5e7eb;">Total:</td>
                             <td style="padding: 4px; text-align: right; width: 20%; border-top: 2px solid #e5e7eb;">$${formatMoney(
-                              priceSummary?.grandTotal || 0,
+                              priceSummary?.grandTotal || 0
                             )}</td>
                           </tr>
                           <tr>
                             <td style="padding: 4px; text-align: right; font-weight: bold; width: 80%;">Amount Paid:</td>
                             <td style="padding: 4px; text-align: right; width: 20%;">$${formatMoney(
-                              priceSummary?.amountPaid || 0,
+                              priceSummary?.amountPaid || 0
                             )}</td>
                           </tr>
                           <tr>
                             <td style="padding: 4px; text-align: right; font-weight: bold; width: 80%;">Balance Due:</td>
                             <td style="padding: 4px; text-align: right; width: 20%;">$${formatMoney(
-                              priceSummary?.balanceDue || 0,
+                              priceSummary?.balanceDue || 0
                             )}</td>
                           </tr>
                         </table>
@@ -607,7 +615,7 @@ export const generateStripeWebhookEmailContent = (
                                 ? transactions
                                     .filter((transaction) => {
                                       const date = new Date(
-                                        transaction.created_at,
+                                        transaction.created_at
                                       );
                                       return !isNaN(date.getTime());
                                     })
@@ -615,23 +623,23 @@ export const generateStripeWebhookEmailContent = (
                                       (transaction, index) => `
                                     <tr>
                                       <td style="padding: 4px;">${dates.formatDisplay(
-                                        transaction.created_at,
+                                        transaction.created_at
                                       )}</td>
-                                      <td style="padding: 4px;">${
+                                      <td style="padding: 4px; white-space: nowrap;">${
                                         transaction.description
                                       }</td>
-                                      <td style="padding: 4px;">${
+                                      <td style="padding: 4px; white-space: nowrap;">${
                                         transaction.method
                                       }</td>
                                       <td style="padding: 4px; text-align: right;">$${
                                         transaction.amount
                                           ? transaction.amount.toFixed(2)
-                                          : 'N/A'
+                                          : "N/A"
                                       }</td>
                                     </tr>
-                                  `,
+                                  `
                                     )
-                                    .join('')
+                                    .join("")
                                 : `<tr>
                                   <td colspan="4" style="text-align: center; padding: 8px;">No transactions available</td>
                                 </tr>`
@@ -646,19 +654,22 @@ export const generateStripeWebhookEmailContent = (
             </table>
             
             <!-- Contact Information -->
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 24px;">
+             <!-- Add 8px padding  -->
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" 
+           
+            style="margin-top: 24px; box-sizing: border-box; padding: 8px">
               <tr>
                 <td>
                   <h2 style="margin-bottom: 8px;">Contact</h2>
                   <p>Contact ${
-                    storeData.contactName || ''
+                    storeData.contactName || ""
                   } to coordinate arrival time and key exchange</p>
                   <p style="margin-top: 8px;">
                     <a href="mailto:${organization.email}">Message host</a>
                     ${
                       storeData.contactPhone
                         ? ` · ${storeData.contactPhone}`
-                        : ''
+                        : ""
                     }
                   </p>
                 </td>
@@ -671,7 +682,7 @@ export const generateStripeWebhookEmailContent = (
                 <td>
                   <p>Thank you for choosing ${safeGet(
                     organization,
-                    'name',
+                    "name"
                   )}. We look forward to serving you!</p>
                 </td>
               </tr>
@@ -679,6 +690,7 @@ export const generateStripeWebhookEmailContent = (
           </td>
         </tr>
       </table>
+      </div>
     </body>
     </html>
   `;

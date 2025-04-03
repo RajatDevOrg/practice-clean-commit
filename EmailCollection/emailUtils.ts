@@ -83,3 +83,13 @@ export const formatMoney = (amount: number | null | undefined) => {
   if (amount == null) return "0.00";
   return Number(amount).toFixed(2);
 };
+
+export const safeGet = (obj: any, path: string, defaultValue: any = "") => {
+  return path
+    .split(".")
+    .reduce(
+      (acc, part) =>
+        acc && acc[part] !== undefined ? acc[part] : defaultValue,
+      obj
+    );
+};
