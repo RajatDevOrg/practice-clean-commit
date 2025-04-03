@@ -3,6 +3,7 @@ import Mailgun from "mailgun.js";
 import { generateAbandonedCheckoutHtml } from "../EmailCollection/generateAbandonedCheckoutHtml";
 import { generateCancelEmailContent } from "../EmailCollection/generateCancelEmailContent";
 import { generateCompletedReservationHtml } from "../EmailCollection/generateCompletedReservationHtml";
+import { generateRejectEmailContent } from "../EmailCollection/generateRejectEmailContent";
 
 async function sendSimpleMessage() {
   const mailgun = new Mailgun(FormData);
@@ -137,12 +138,26 @@ async function sendSimpleMessage() {
     },
   };
 
+  const rejectSampleInput = {
+    customerName: "John Doe",
+    reservationNumber: "123456789",
+    customMessage:
+      "We're sorry, but we are unable to approve your rental request at this time.",
+    organization: {
+      logo_url: "https://example.com/logo.png",
+      website_url: "https://example.com",
+      phone_number: "+1 234-567-8900",
+      email: "support@example.com",
+      name: "Example Rentals",
+    },
+  };
   // Generate the HTML content
   //const htmlContent = generateAbandonedCheckoutHtml(testParams1);
 
   //const { htmlContent, textContent } = generateCancelEmailContent(testParams2);
 
-  const htmlContent = generateCompletedReservationHtml(testInput);
+  //const htmlContent = generateCompletedReservationHtml(testInput);
+  const { htmlContent } = generateRejectEmailContent(rejectSampleInput);
 
   try {
     const data = await mg.messages.create(

@@ -1,15 +1,17 @@
+import { generateOrgHeader } from "./emailUtils";
+
 // Helper function to format and make URLs clickable
 const formatWebsiteUrl = (url: string | null | undefined): string => {
-  if (!url) return '';
+  if (!url) return "";
 
   // Remove trailing slash
-  let formattedUrl = url.toString().replace(/\/$/, '');
+  let formattedUrl = url.toString().replace(/\/$/, "");
 
   // Create display version (remove https:// or http://)
   let displayUrl = formattedUrl;
-  if (displayUrl.startsWith('https://')) {
+  if (displayUrl.startsWith("https://")) {
     displayUrl = displayUrl.substring(8);
-  } else if (displayUrl.startsWith('http://')) {
+  } else if (displayUrl.startsWith("http://")) {
     displayUrl = displayUrl.substring(7);
   }
 
@@ -19,7 +21,7 @@ const formatWebsiteUrl = (url: string | null | undefined): string => {
 
 // Helper function to format and make email addresses clickable
 const formatEmail = (email: string | null | undefined): string => {
-  if (!email) return '';
+  if (!email) return "";
 
   // Make it clickable with mailto link
   return `<a href="mailto:${email}" style="color: #0070f3; text-decoration: none;">${email}</a>`;
@@ -27,10 +29,10 @@ const formatEmail = (email: string | null | undefined): string => {
 
 // Helper function to format and make phone numbers clickable
 const formatPhoneNumber = (phone: string | null | undefined): string => {
-  if (!phone) return '';
+  if (!phone) return "";
 
   // Remove any non-digit characters for the href
-  const cleanPhone = phone.toString().replace(/\D/g, '');
+  const cleanPhone = phone.toString().replace(/\D/g, "");
 
   // Make it clickable with tel link
   return `<a href="tel:${cleanPhone}" style="color: #0070f3; text-decoration: none;">${phone}</a>`;
@@ -60,38 +62,9 @@ export const generateRejectEmailContent = ({
 }: RejectEmailContentProps) => {
   const orgHeader = organization
     ? `
-    <div style="margin-bottom: 24px; text-align: center;">
-      ${
-        organization.logo_url
-          ? `
-        <div style="width: 100%; margin-bottom: 16px; text-align: center;">
-          <img
-            src="${organization.logo_url}"
-            alt="${organization.name}"
-            style="max-width: 100%; max-height: 100px; object-fit: contain; margin: 0 auto;"
-          />
-        </div>
-      `
-          : ''
-      }
-      <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
-        ${organization.name}
-      </p>
-  <table style="width: 100%; margin: 8px auto;">            <tr>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatPhoneNumber(
-                organization.phone_number,
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatEmail(
-                organization.email,
-              )}</td>
-              <td style="text-align: center; padding: 0 8px; width: 200px;">${formatWebsiteUrl(
-                organization.website_url,
-              )}</td>
-            </tr>
-          </table>
-    </div>
+    ${generateOrgHeader(organization)}
   `
-    : '';
+    : "";
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -105,8 +78,9 @@ export const generateRejectEmailContent = ({
         .email-container { width: 600px; margin: 0 auto; padding: 10px; }
       </style>
     </head>
-    <body>
-      <div class="email-container">
+    <!-- update the body and div with "email-container" class to align the content in the center horizontally " -->
+  <body style="background-color: #f4f4f4; font-family: Arial, sans-serif; text-align: left; line-height: 1.6; color: #000000; margin: 0; padding: 0;">
+  <div class="email-container" style="max-width: 600px; width: 100%; margin: 0 auto; padding: 10px; box-sizing: border-box; background-color: #ffffff;">
         ${orgHeader}
         <p>Dear ${customerName},</p>
         <p>Regarding your reservation request #${reservationNumber}:</p>
