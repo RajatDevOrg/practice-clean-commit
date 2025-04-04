@@ -10,30 +10,47 @@ export const generateOrgHeader = (organization: {
       organization.logo_url
         ? `
       <div style="width: 100%; margin-bottom: 16px; text-align: center;">
-      <img src="${organization.logo_url}" alt="${organization.name}" width="500" height="100" style="max-width: 300px; height: auto; object-fit: contain; margin: 0 auto;" />
+        <img src="${organization.logo_url}" alt="${organization.name}" width="500" height="100" style="max-width: 300px; height: auto; object-fit: contain; margin: 0 auto;" />
       </div>`
         : ""
     }
+      
     <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${
       organization.name
     }</p>
+    
     <table role="presentation" style="width: 100%; margin: 8px auto;">
-  <tr class="responsive-row">
-    <td style="text-align: center; padding: 8px; width: 200px;">${formatPhoneNumber(
-      organization.phone_number
-    )}</td>
-  </tr>
-  <tr class="responsive-row">
-    <td style="text-align: center; padding: 8px; width: 200px;">${formatEmail(
-      organization.email
-    )}</td>
-  </tr>
-  <tr class="responsive-row">
-    <td style="text-align: center; padding: 8px; width: 200px;">${formatWebsiteUrl(
-      organization.website_url
-    )}</td>
-  </tr>
-</table>
+      ${
+        organization.phone_number
+          ? `
+        <tr class="responsive-row">
+          <td style="text-align: center; padding: 8px; width: 200px;">${formatPhoneNumber(
+            organization.phone_number
+          )}</td>
+        </tr>`
+          : ""
+      }
+      ${
+        organization.email
+          ? `
+        <tr class="responsive-row">
+          <td style="text-align: center; padding: 8px; width: 200px;">${formatEmail(
+            organization.email
+          )}</td>
+        </tr>`
+          : ""
+      }
+      ${
+        organization.website_url
+          ? `
+        <tr class="responsive-row">
+          <td style="text-align: center; padding: 8px; width: 200px;">${formatWebsiteUrl(
+            organization.website_url
+          )}</td>
+        </tr>`
+          : ""
+      }
+    </table>
   </div>
 `;
 
